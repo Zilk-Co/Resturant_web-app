@@ -16,60 +16,51 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export const customFetch = {
-  async get<T = unknown>(path: string): Promise<T> {
-    const res = await fetch(`${_baseUrl}${path}`, {
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-    });
-    if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
-    return res.json() as Promise<T>;
-  },
-  async post<T = unknown>(path: string, body?: unknown): Promise<T> {
-    const res = await fetch(`${_baseUrl}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
-    return res.json() as Promise<T>;
-  },
-  async put<T = unknown>(path: string, body?: unknown): Promise<T> {
-    const res = await fetch(`${_baseUrl}${path}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) throw new Error(`PUT ${path} failed: ${res.status}`);
-    return res.json() as Promise<T>;
-  },
-  async patch<T = unknown>(path: string, body?: unknown): Promise<T> {
-    const res = await fetch(`${_baseUrl}${path}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.status}`);
-    return res.json() as Promise<T>;
-  },
-  async delete<T = unknown>(path: string): Promise<T> {
-    const res = await fetch(`${_baseUrl}${path}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-    });
-    if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
-    return res.json() as Promise<T>;
-  },
-  getBaseUrl() {
-    return _baseUrl;
-  },
+async function doFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${_baseUrl}${path}`, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    ...init,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `Request failed: ${res.status}`);
+  }
+  if (res.status === 204 || res.headers.get("content-type")?.includes("text/plain")) {
+    return (await res.text()) as unknown as T;
+  }
+  return res.json() as Promise<T>;
+}
+
+function customFetchFn<T = unknown>(path: string): Promise<T> {
+  return doFetch<T>(path);
+}
+
+customFetchFn.get = <T = unknown>(path: string): Promise<T> => doFetch<T>(path);
+customFetchFn.post = <T = unknown>(path: string, body?: unknown): Promise<T> =>
+  doFetch<T>(path, { method: "POST", body: body != null ? JSON.stringify(body) : undefined });
+customFetchFn.put = <T = unknown>(path: string, body?: unknown): Promise<T> =>
+  doFetch<T>(path, { method: "PUT", body: body != null ? JSON.stringify(body) : undefined });
+customFetchFn.patch = <T = unknown>(path: string, body?: unknown): Promise<T> =>
+  doFetch<T>(path, { method: "PATCH", body: body != null ? JSON.stringify(body) : undefined });
+customFetchFn.delete = <T = unknown>(path: string): Promise<T> =>
+  doFetch<T>(path, { method: "DELETE" });
+customFetchFn.getBaseUrl = () => _baseUrl;
+
+export const customFetch = customFetchFn as {
+  <T = unknown>(path: string): Promise<T>;
+  get: <T = unknown>(path: string) => Promise<T>;
+  post: <T = unknown>(path: string, body?: unknown) => Promise<T>;
+  put: <T = unknown>(path: string, body?: unknown) => Promise<T>;
+  patch: <T = unknown>(path: string, body?: unknown) => Promise<T>;
+  delete: <T = unknown>(path: string) => Promise<T>;
+  getBaseUrl: () => string;
 };
 
-// Query key factories
 export const getListAdminOrdersQueryKey = () => ["admin", "orders"] as const;
 export const getListAdminMenuItemsQueryKey = () => ["admin", "menu"] as const;
 export const getListAdminCategoriesQueryKey = () => ["admin", "categories"] as const;
 
-// Admin hooks
 export function useGetAdminAnalytics() {
   return useQuery({
     queryKey: ["admin", "analytics"],
