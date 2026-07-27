@@ -1,4 +1,4 @@
-import { setBaseUrl, setAuthTokenGetter } from "@workspace/api-client-react";
+import { setBaseUrl, setAuthTokenGetter } from "@/lib/api-client-react";
 
 setBaseUrl(import.meta.env.VITE_API_URL || "");
 

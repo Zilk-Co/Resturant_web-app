@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useCart } from "@/contexts/CartContext";
 import { Link, useLocation } from "wouter";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch } from "@/lib/api-client-react";
 import { FoodCard } from "@/components/FoodCard";
 import { ItemModal } from "@/components/ItemModal";
 import { Skeleton } from "@/components/Skeleton";

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch } from "@/lib/api-client-react";
 import { ArrowLeft, Clock, MapPin, CheckCircle, ChefHat, Truck, Package, CircleDot } from "lucide-react";
 
 interface OrderItem { name: string; price: number; quantity: number; }

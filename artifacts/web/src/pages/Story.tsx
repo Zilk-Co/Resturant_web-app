@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch } from "@/lib/api-client-react";
 import { MapPin, Heart, Star, Utensils } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 

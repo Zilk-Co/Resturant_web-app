@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch } from "@/lib/api-client-react";
 import { ArrowLeft, Calendar, Clock, Users, CheckCircle } from "lucide-react";
 
 interface Reservation {

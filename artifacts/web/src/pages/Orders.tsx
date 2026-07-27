@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch } from "@/lib/api-client-react";
 import { Link } from "wouter";
 import { Package, Clock, MapPin } from "lucide-react";
 

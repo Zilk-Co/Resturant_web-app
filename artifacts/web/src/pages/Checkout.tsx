@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useLocation } from "wouter";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch } from "@/lib/api-client-react";
 import { sendOrderConfirmation } from "@/lib/emailService";
 import { ArrowLeft, CreditCard, Lock, MapPin, Pencil } from "lucide-react";
 

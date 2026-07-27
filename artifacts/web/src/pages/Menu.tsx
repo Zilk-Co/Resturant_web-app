@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearch } from "wouter";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch } from "@/lib/api-client-react";
 import { FoodCard } from "@/components/FoodCard";
 import { ItemModal } from "@/components/ItemModal";
 import { Skeleton, MenuCardSkeleton } from "@/components/Skeleton";

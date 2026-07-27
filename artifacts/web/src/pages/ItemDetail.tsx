@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch } from "@/lib/api-client-react";
 import { useCart } from "@/contexts/CartContext";
 import { FoodCard } from "@/components/FoodCard";
 import { ArrowLeft, Minus, Plus, ShoppingCart, Sparkles } from "lucide-react";

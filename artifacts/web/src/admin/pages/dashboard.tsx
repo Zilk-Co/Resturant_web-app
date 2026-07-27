@@ -1,6 +1,6 @@
 import { Shell } from "@/admin/layout/Shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/admin/ui/card";
-import { useGetAdminAnalytics, useListAdminOrders } from "@workspace/api-client-react";
+import { useGetAdminAnalytics, useListAdminOrders } from "@/lib/api-client-react";
 import { Activity, CircleDollarSign, ClipboardList, AlertTriangle } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Badge } from "@/admin/ui/badge";
