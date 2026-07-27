@@ -1,0 +1,554 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: admin-analytics
+    description: Admin analytics
+  - name: admin-menu
+    description: Admin menu management
+  - name: admin-orders
+    description: Admin order management
+  - name: mobile
+    description: Mobile app endpoints
+  - name: storage
+    description: Object storage upload and serving
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /storage/objects/{objectPath}:
+    get:
+      tags: [storage]
+      operationId: getStorageObject
+      summary: Serve an uploaded object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /mobile/menu:
+    get:
+      operationId: getMobileMenu
+      tags: [mobile]
+      summary: Get all available menu items for the mobile app
+      responses:
+        "200":
+          description: List of menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminMenuItem"
+
+  /admin/analytics:
+    get:
+      operationId: getAdminAnalytics
+      tags: [admin-analytics]
+      summary: Get analytics summary
+      responses:
+        "200":
+          description: Analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsSummary"
+
+  /admin/menu:
+    get:
+      operationId: listAdminMenuItems
+      tags: [admin-menu]
+      summary: List all menu items
+      responses:
+        "200":
+          description: List of menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminMenuItem"
+    post:
+      operationId: createAdminMenuItem
+      tags: [admin-menu]
+      summary: Add a new menu item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminMenuItemInput"
+      responses:
+        "201":
+          description: Created menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMenuItem"
+
+  /admin/menu/{id}:
+    patch:
+      operationId: updateAdminMenuItem
+      tags: [admin-menu]
+      summary: Update a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminMenuItemUpdate"
+      responses:
+        "200":
+          description: Updated menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMenuItem"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteAdminMenuItem
+      tags: [admin-menu]
+      summary: Delete a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /admin/orders:
+    get:
+      operationId: listAdminOrders
+      tags: [admin-orders]
+      summary: List all orders
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminOrder"
+
+  /admin/categories:
+    get:
+      operationId: listAdminCategories
+      tags: [admin-menu]
+      summary: List all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminCategory"
+    post:
+      operationId: createAdminCategory
+      tags: [admin-menu]
+      summary: Create a new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCategory"
+        "409":
+          description: Category already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /admin/categories/{id}:
+    delete:
+      operationId: deleteAdminCategory
+      tags: [admin-menu]
+      summary: Delete a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: Category has items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /admin/orders/{id}/status:
+    patch:
+      operationId: updateAdminOrderStatus
+      tags: [admin-orders]
+      summary: Update order status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusUpdate"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrder"
+        "404":
+          description: Not found
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
+          type: string
+
+    AnalyticsSummary:
+      type: object
+      required: [totalRevenue, totalOrders, activeOrders, outOfStockItems, categoryBreakdown, dailyRevenue]
+      properties:
+        totalRevenue:
+          type: number
+        totalOrders:
+          type: integer
+        activeOrders:
+          type: integer
+        outOfStockItems:
+          type: integer
+        categoryBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryStat"
+        dailyRevenue:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyRevenue"
+
+    CategoryStat:
+      type: object
+      required: [category, orders, revenue]
+      properties:
+        category:
+          type: string
+        orders:
+          type: integer
+        revenue:
+          type: number
+
+    DailyRevenue:
+      type: object
+      required: [date, revenue, orders]
+      properties:
+        date:
+          type: string
+        revenue:
+          type: number
+        orders:
+          type: integer
+
+    AdminMenuItem:
+      type: object
+      required: [id, name, description, price, category, available]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        category:
+          type: string
+        available:
+          type: boolean
+        spicy:
+          type: boolean
+        popular:
+          type: boolean
+        calories:
+          type: ["integer", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        offerPercentage:
+          type: ["integer", "null"]
+          minimum: 0
+          maximum: 100
+        offerLabel:
+          type: ["string", "null"]
+        offerActive:
+          type: boolean
+        offerStartDate:
+          type: ["string", "null"]
+        offerEndDate:
+          type: ["string", "null"]
+
+    AdminMenuItemInput:
+      type: object
+      required: [name, description, price, category]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        category:
+          type: string
+        spicy:
+          type: boolean
+        popular:
+          type: boolean
+        calories:
+          type: ["integer", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        offerPercentage:
+          type: ["integer", "null"]
+          minimum: 0
+          maximum: 100
+        offerLabel:
+          type: ["string", "null"]
+        offerActive:
+          type: boolean
+        offerStartDate:
+          type: ["string", "null"]
+        offerEndDate:
+          type: ["string", "null"]
+
+    AdminMenuItemUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        category:
+          type: string
+        available:
+          type: boolean
+        spicy:
+          type: boolean
+        popular:
+          type: boolean
+        calories:
+          type: ["integer", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        offerPercentage:
+          type: ["integer", "null"]
+          minimum: 0
+          maximum: 100
+        offerLabel:
+          type: ["string", "null"]
+        offerActive:
+          type: boolean
+        offerStartDate:
+          type: ["string", "null"]
+        offerEndDate:
+          type: ["string", "null"]
+
+    AdminOrder:
+      type: object
+      required: [id, customerName, customerPhone, branch, orderType, items, total, status, createdAt]
+      properties:
+        id:
+          type: string
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        branch:
+          type: string
+        orderType:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminOrderItem"
+        total:
+          type: number
+        status:
+          type: string
+        createdAt:
+          type: string
+
+    AdminOrderItem:
+      type: object
+      required: [name, quantity, price]
+      properties:
+        name:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+
+    AdminCategory:
+      type: object
+      required: [id, name, slug, itemCount]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        itemCount:
+          type: integer
+
+    AdminCategoryInput:
+      type: object
+      required: [name, slug]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        slug:
+          type: string
+          minLength: 1
+
+    OrderStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string

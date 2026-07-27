@@ -1,0 +1,32 @@
+[15:34:08.672] [32mINFO[39m (3292): [36mServer listening[39m
+    [35mport[39m: 8080
+[15:34:22.989] [32mINFO[39m (3292): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 1,
+      "method": "GET",
+      "url": "/api/mobile/banners"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 12
+[15:34:23.089] [32mINFO[39m (3292): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 2,
+      "method": "GET",
+      "url": "/api/mobile/settings"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 3
+[15:34:23.150] [32mINFO[39m (3292): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 3,
+      "method": "GET",
+      "url": "/api/mobile/website-content"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 34

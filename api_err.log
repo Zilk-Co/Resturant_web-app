@@ -1,0 +1,11 @@
+file:///E:/THB_WEB_APP/resturant-app-main/resturant-app-main/artifacts/api-server/dist/index.mjs:39452
+  throw new Error("FATAL: JWT_SECRET environment variable is not set. Server cannot start without it.");
+        ^
+
+Error: FATAL: JWT_SECRET environment variable is not set. Server cannot start without it.
+    at file:///E:/THB_WEB_APP/resturant-app-main/resturant-app-main/artifacts/api-server/dist/index.mjs:39452:9
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:633:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.16.0

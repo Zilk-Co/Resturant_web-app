@@ -1,0 +1,183 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    RFC RESTAURANT APP - FULL STACK GUIDE
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ ALL 3 SERVERS RUNNING AND CONNECTED
+
+1. API SERVER (Port 8080)
+   ├─ URL: http://192.168.0.119:8080
+   ├─ Status: ✓ Running
+   └─ Endpoints: /api/mobile/menu, /api/admin/menu, /api/admin/analytics, etc.
+
+2. ADMIN PANEL (Port 3000)
+   ├─ URL: http://192.168.0.119:3000  (or http://localhost:3000 from your PC)
+   ├─ Status: ✓ Running
+   └─ Features: Manage meals, deals, settings, analytics
+
+3. WEBSITE (Port 3001)
+   ├─ URL: http://192.168.0.119:3001  (or http://localhost:3001 from your PC)
+   ├─ Status: ✓ Running
+   └─ Features: Browse menu, checkout, orders
+
+───────────────────────────────────────────────────────────────────────────────
+
+🏗️  ANDROID APK BUILD
+
+Status: Building on EAS Cloud servers
+Build ID: 9ce2fec4-86e9-452b-9c90-17dcad0ca1ae
+Progress: In queue / Fingerprinting
+View Logs: https://expo.dev/accounts/the_zoro/projects/rfcrealfarmerschicken/builds/9ce2fec4-86e9-452b-9c90-17dcad0ca1ae
+
+Expected time: 10-20 minutes
+Estimated size: ~40 MB (arm64-v8a only)
+
+───────────────────────────────────────────────────────────────────────────────
+
+🔄 HOW MEAL/DEAL SYNC WORKS
+
+When you add/update a meal in the Admin Panel:
+
+1. Admin Panel → API Server
+   ├─ POST /api/admin/menu (create)
+   ├─ PATCH /api/admin/menu/:id (update)
+   └─ Data saved to data/store.json
+
+2. Mobile App ← API Server
+   ├─ Fetches from /api/mobile/menu on app load
+   ├─ Shows latest meals with real prices + offers
+   └─ NO rebuild needed - fetches from API dynamically
+
+3. Website ← API Server
+   ├─ Fetches from /api/mobile/menu on page load
+   ├─ Shows same meals as app
+   └─ Real-time sync via MenuContext
+
+KEY: The app and website fetch menu data from the API dynamically.
+     They do NOT store meals locally. Every load pulls fresh data.
+     New meals show immediately without app rebuild!
+
+───────────────────────────────────────────────────────────────────────────────
+
+📱 INSTALLATION ON SAMSUNG S10+
+
+When the build completes:
+
+1. Get the APK:
+   • Download from the build URL above
+   • File: com.the_zoro.rfcrealfarmerschicken-production-<version>.apk
+
+2. Enable USB Debugging on S10+:
+   ├─ Go to Settings → About Phone
+   ├─ Tap "Build number" 7 times
+   ├─ Go back to Settings → Developer Options
+   └─ Enable "USB Debugging"
+
+3. Connect USB and Install:
+   ├─ Run: adb install <path-to-apk>
+   ├─ Or drag APK to Android Studio's device window
+   └─ Or transfer to phone and tap to install
+
+4. First Launch:
+   ├─ Phone must be on same WiFi as backend (192.168.0.119)
+   ├─ App will connect to: http://192.168.0.119:8080
+   ├─ Login: Any phone number + OTP (server logs OTP for dev)
+   └─ Browse meals from /api/mobile/menu
+
+───────────────────────────────────────────────────────────────────────────────
+
+✅ TEST CHECKLIST
+
+[ ] Admin Panel loads on http://localhost:3000
+    └─ Try adding a new meal:
+       ├─ Name: "Test Meal"
+       ├─ Price: 500
+       ├─ Category: "Burgers"
+       ├─ Available: Yes
+       └─ Click "Save"
+
+[ ] Check API responds with new meal:
+    └─ Open: http://localhost:8080/api/mobile/menu
+    └─ Search for "Test Meal" - should be there
+
+[ ] Website shows new meal:
+    └─ Go to: http://localhost:3001
+    └─ Refresh page
+    └─ "Test Meal" should appear in menu
+
+[ ] Mobile app shows new meal:
+    └─ Install APK (once build completes)
+    └─ Launch app
+    └─ Go to Menu
+    └─ "Test Meal" should appear
+
+───────────────────────────────────────────────────────────────────────────────
+
+🎯 PRICING WITH OFFERS
+
+If you set an offer on Admin Panel:
+├─ Name: "Special Deal"
+├─ Price: 1000
+├─ Offer: 20% (offerPercentage: 20, offerActive: true)
+
+Then in App/Website:
+├─ Shows discounted price: 800 (with strikethrough 1000)
+├─ "20% OFF" badge
+└─ Cart uses discounted price (800), not original (1000)
+
+✓ Fixed! (Previously bugs charged full price)
+
+───────────────────────────────────────────────────────────────────────────────
+
+💡 HELPFUL FACTS
+
+NO REBUILDS NEEDED FOR:
+  ✓ Adding meals/deals
+  ✓ Changing prices
+  ✓ Updating images
+  ✓ Changing settings (tax, delivery fee)
+  ✓ Adding categories
+  ✓ Creating banners
+
+ONLY REBUILD IF:
+  ✗ Changing API endpoints/URLs
+  ✗ Modifying code logic
+  ✗ Fixing bugs in app code
+  ✗ Changing app features
+
+───────────────────────────────────────────────────────────────────────────────
+
+📊 ARCHITECTURE
+
+                         ┌──────────────┐
+                         │  Your PC     │
+                         └──────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+    ┌────────┐         ┌──────────┐         ┌──────────┐
+    │ Admin  │         │   API    │         │ Website  │
+    │ :3000  │         │  :8080   │         │  :3001   │
+    └────────┘         └──────────┘         └──────────┘
+        │                   ▲ │                     │
+        └───────────────────┼─┴─────────────────────┘
+                            │
+                    ┌───────┴────────┐
+                    │   store.json   │
+                    │   (All Data)   │
+                    └────────────────┘
+
+    Mobile App on S10+ connects to API at 192.168.0.119:8080
+    Website and Admin use localhost (same machine)
+
+───────────────────────────────────────────────────────────────────────────────
+
+🚀 NEXT STEPS
+
+1. Keep servers running in the background
+2. Wait for EAS build to complete (check URL above)
+3. Install APK on your S10+
+4. Test adding meal in admin → check it appears in app+website
+5. Test offering discount → check it shows correctly everywhere
+
+═══════════════════════════════════════════════════════════════════════════════

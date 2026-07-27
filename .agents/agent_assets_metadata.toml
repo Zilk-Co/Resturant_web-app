@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "wkj5y0O6kcOwRHCKs4zRZ"
+uri = "file://artifacts/mobile/assets/images/icon.png"
+type = "image"
+title = "RFC logo icon"
+
+[[generated]]
+id = "z248Vb68P3JU3EfgKZSnm"
+uri = "file://artifacts/mobile/assets/images/hero-banner.png"
+type = "image"
+title = "RFC hero banner"
+
+[[generated]]
+id = "0te7IZCJIb1Sil_tMO_x-"
+uri = "file://artifacts/mobile/assets/images/chicken.png"
+type = "image"
+title = "crispy chicken"
+
+[[generated]]
+id = "C9yrt7OrdbF_jU4fBEavJ"
+uri = "file://artifacts/mobile/assets/images/burger.png"
+type = "image"
+title = "RFC zinger burger"

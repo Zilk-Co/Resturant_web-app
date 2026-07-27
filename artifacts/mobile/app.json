@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "THB - The Hunger Bite Istanbul",
+    "slug": "rfcrealfarmerschicken",
+    "version": "1.0.0",
+    "sdkVersion": "56.0.0",
+    "orientation": "portrait",
+    "platforms": [
+      "android"
+    ],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A3525"
+    },
+    "android": {
+      "package": "com.thehungerbite.istanbul",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1A3525"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "31898208-ae1e-41d4-bc8e-79e05935229c"
+      }
+    },
+    "owner": "the_zoro"
+  }
+}

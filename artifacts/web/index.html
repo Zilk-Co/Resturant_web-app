@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1A3525" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="THB" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <title>The Hunger Bite Istanbul — Order Online</title>
+    <meta name="description" content="Order fresh, halal-certified food from The Hunger Bite Istanbul. Browse our menu and enjoy the best Turkish-Pakistani fusion in town." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script>
+      firebase.initializeApp({
+        apiKey: "AIzaSyD2r3sTQ9r5KtQflZ5Pz1Hy5iIbhv2iSSg",
+        authDomain: "resturant-tbh.firebaseapp.com",
+        projectId: "resturant-tbh",
+        storageBucket: "resturant-tbh.firebasestorage.app",
+        messagingSenderId: "988742657968",
+        appId: "1:988742657968:web:7a928802e0e7a2fd75d875",
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>

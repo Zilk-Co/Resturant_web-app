@@ -1,0 +1,23 @@
+{
+  "name": "The Hunger Bite Istanbul",
+  "short_name": "THB",
+  "description": "Order fresh, halal-certified food from The Hunger Bite Istanbul",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1A3525",
+  "theme_color": "#1A3525",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["food", "restaurant", "order"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

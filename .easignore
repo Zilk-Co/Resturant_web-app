@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+artifacts/web/
+artifacts/api-server/
+artifacts/admin/
+electron-app/
+*.apk
+*.aab
+apks/
+.git/
+.vscode/
+*.log
+pnpm-lock.yaml
+pnpm-workspace.yaml

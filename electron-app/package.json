@@ -1,0 +1,48 @@
+{
+  "name": "the-hunger-bite-istanbul",
+  "version": "1.0.0",
+  "description": "The Hunger Bite Istanbul - Restaurant Ordering App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable",
+    "build:dir": "electron-builder --win dir"
+  },
+  "build": {
+    "appId": "com.thehungerbite.istanbul",
+    "productName": "The Hunger Bite Istanbul",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "server/**/*",
+      "web/**/*",
+      "assets/**/*",
+      "!node_modules/.cache"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "assets/icon.ico"
+    },
+    "portable": {
+      "artifactName": "THB-Istanbul-${version}-Portable.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "cookie-parser": "^1.4.7",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "pino": "^9.0.0",
+    "pino-http": "^10.0.0",
+    "pino-pretty": "^11.0.0",
+    "zod": "^3.23.0"
+  }
+}

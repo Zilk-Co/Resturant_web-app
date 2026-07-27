@@ -1,0 +1,16 @@
+1. Install dependencies:
+   pnpm install
+
+2. Start the mobile app:
+   pnpm --filter @workspace/mobile run dev
+
+3. Start the admin dashboard:
+   pnpm --filter @workspace/admin run dev
+
+4. Start the backend API server:
+   pnpm --filter @workspace/api-server run dev
+
+Optional commands:
+- Build all packages: pnpm run build
+- Run typecheck across the workspace: pnpm run typecheck
+- Run mobile web preview: pnpm --filter @workspace/mobile run dev:web
