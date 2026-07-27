@@ -206,6 +206,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error || "Failed to sign up");
     }
+    const data = await res.json().catch(() => ({}));
+    return { devOtp: data.devOtp || null };
   }, []);
 
   const verifySignup = useCallback(async (phone: string, code: string) => {
