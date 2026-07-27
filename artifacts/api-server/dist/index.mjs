@@ -29770,6 +29770,14 @@ var db_default = pool;
 
 // src/routes/admin.ts
 var router3 = (0, import_express3.Router)();
+function snakeToCamel(row) {
+  const out = {};
+  for (const [k, v] of Object.entries(row)) {
+    const camel = k.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    out[camel] = v;
+  }
+  return out;
+}
 var ADMIN_USERNAME = "THB_ADMIN";
 var ADMIN_PASSWORD = "TBH_PASSWORD_123";
 var JWT_SECRET2 = process.env.JWT_SECRET || "thb-jwt-secret-2026-production-key-xK9mPz";
@@ -29929,7 +29937,7 @@ router3.delete("/admin/categories/:id", adminAuth, async (req, res) => {
 router3.get("/admin/menu", async (_req, res) => {
   try {
     const { rows } = await db_default.query("SELECT * FROM menu_items ORDER BY id");
-    res.json(rows.map((r) => ListAdminMenuItemsResponseItem.parse(r)));
+    res.json(rows.map((r) => ListAdminMenuItemsResponseItem.parse(snakeToCamel(r))));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -29962,7 +29970,7 @@ router3.post("/admin/menu", adminAuth, async (req, res) => {
         parsed.data.offerEndDate ?? null
       ]
     );
-    res.status(201).json(ListAdminMenuItemsResponseItem.parse(rows[0]));
+    res.status(201).json(ListAdminMenuItemsResponseItem.parse(snakeToCamel(rows[0])));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30000,7 +30008,7 @@ router3.patch("/admin/menu/:id", adminAuth, async (req, res) => {
       res.status(404).json({ error: "Menu item not found" });
       return;
     }
-    res.json(UpdateAdminMenuItemResponse.parse(rows[0]));
+    res.json(UpdateAdminMenuItemResponse.parse(snakeToCamel(rows[0])));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30026,7 +30034,7 @@ router3.delete("/admin/menu/:id", adminAuth, async (req, res) => {
 router3.get("/admin/orders", async (_req, res) => {
   try {
     const { rows } = await db_default.query("SELECT * FROM orders ORDER BY created_at DESC");
-    res.json(rows.map((o) => ListAdminOrdersResponseItem.parse({ ...o, branch: o.branch ?? "Main" })));
+    res.json(rows.map((o) => ListAdminOrdersResponseItem.parse({ ...snakeToCamel(o), branch: o.branch ?? "Main" })));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30052,7 +30060,7 @@ router3.patch("/admin/orders/:id/status", adminAuth, async (req, res) => {
       res.status(404).json({ error: "Order not found" });
       return;
     }
-    res.json(UpdateAdminOrderStatusResponse.parse({ ...rows[0], branch: rows[0].branch ?? "Main" }));
+    res.json(UpdateAdminOrderStatusResponse.parse({ ...snakeToCamel(rows[0]), branch: rows[0].branch ?? "Main" }));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30700,10 +30708,47 @@ var mobile_default = router5;
 // src/routes/banners.ts
 var import_express6 = __toESM(require_express2(), 1);
 var router6 = (0, import_express6.Router)();
+function dbBannerToCamel(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    subtitle: row.subtitle,
+    tag: row.tag,
+    tagColor: row.tag_color,
+    gradStart: row.grad_start,
+    gradEnd: row.grad_end,
+    ctaLabel: row.cta_label,
+    ctaCat: row.cta_cat,
+    imageUrl: row.image_url,
+    active: row.active,
+    sortOrder: row.sort_order
+  };
+}
+function camelToDbBanner(body) {
+  const map = {
+    title: "title",
+    subtitle: "subtitle",
+    tag: "tag",
+    tagColor: "tag_color",
+    gradStart: "grad_start",
+    gradEnd: "grad_end",
+    ctaLabel: "cta_label",
+    ctaCat: "cta_cat",
+    imageUrl: "image_url",
+    active: "active",
+    sortOrder: "sort_order"
+  };
+  const result = {};
+  for (const [key, val] of Object.entries(body)) {
+    const dbKey = map[key] || key;
+    result[dbKey] = val;
+  }
+  return result;
+}
 router6.get("/mobile/banners", async (_req, res) => {
   try {
     const { rows } = await db_default.query("SELECT * FROM banners WHERE active = true ORDER BY sort_order");
-    res.json(rows);
+    res.json(rows.map(dbBannerToCamel));
   } catch {
     res.json([]);
   }
@@ -30711,7 +30756,7 @@ router6.get("/mobile/banners", async (_req, res) => {
 router6.get("/admin/banners", async (_req, res) => {
   try {
     const { rows } = await db_default.query("SELECT * FROM banners ORDER BY sort_order");
-    res.json(rows);
+    res.json(rows.map(dbBannerToCamel));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30741,7 +30786,7 @@ router6.post("/admin/banners", adminAuth, async (req, res) => {
         sortOrder ?? 0
       ]
     );
-    res.status(201).json(rows[0]);
+    res.status(201).json(dbBannerToCamel(rows[0]));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30749,25 +30794,13 @@ router6.post("/admin/banners", adminAuth, async (req, res) => {
 router6.patch("/admin/banners/:id", adminAuth, async (req, res) => {
   const rawId = Array.isArray(req.params["id"]) ? req.params["id"][0] : req.params["id"];
   try {
+    const dbFields = camelToDbBanner(req.body);
     const fields = [];
     const values = [];
     let idx = 1;
-    const mapping = {
-      title: "title",
-      subtitle: "subtitle",
-      tag: "tag",
-      tagColor: "tag_color",
-      gradStart: "grad_start",
-      gradEnd: "grad_end",
-      ctaLabel: "cta_label",
-      ctaCat: "cta_cat",
-      imageUrl: "image_url",
-      active: "active",
-      sortOrder: "sort_order"
-    };
-    for (const [key, val] of Object.entries(req.body)) {
-      const dbKey = mapping[key] || key;
-      fields.push(`${dbKey} = $${idx}`);
+    for (const [key, val] of Object.entries(dbFields)) {
+      if (key === "id") continue;
+      fields.push(`${key} = $${idx}`);
       values.push(val);
       idx++;
     }
@@ -30781,7 +30814,7 @@ router6.patch("/admin/banners/:id", adminAuth, async (req, res) => {
       res.status(404).json({ error: "Banner not found" });
       return;
     }
-    res.json(rows[0]);
+    res.json(dbBannerToCamel(rows[0]));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

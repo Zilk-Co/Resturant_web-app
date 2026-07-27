@@ -20,6 +20,15 @@ import {
 
 const router: IRouter = Router();
 
+function snakeToCamel(row: any): any {
+  const out: any = {};
+  for (const [k, v] of Object.entries(row)) {
+    const camel = k.replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase());
+    out[camel] = v;
+  }
+  return out;
+}
+
 const ADMIN_USERNAME = "THB_ADMIN";
 const ADMIN_PASSWORD = "TBH_PASSWORD_123";
 const JWT_SECRET = process.env.JWT_SECRET || "thb-jwt-secret-2026-production-key-xK9mPz";
@@ -203,7 +212,7 @@ router.delete("/admin/categories/:id", adminAuth, async (req, res): Promise<void
 router.get("/admin/menu", async (_req, res): Promise<void> => {
   try {
     const { rows } = await pool.query("SELECT * FROM menu_items ORDER BY id");
-    res.json(rows.map((r: any) => ListAdminMenuItemsResponseItem.parse(r)));
+    res.json(rows.map((r: any) => ListAdminMenuItemsResponseItem.parse(snakeToCamel(r))));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -225,7 +234,7 @@ router.post("/admin/menu", adminAuth, async (req, res): Promise<void> => {
        parsed.data.offerPercentage ?? null, parsed.data.offerLabel ?? null, parsed.data.offerActive ?? false,
        parsed.data.offerStartDate ?? null, parsed.data.offerEndDate ?? null]
     );
-    res.status(201).json(ListAdminMenuItemsResponseItem.parse(rows[0]));
+    res.status(201).json(ListAdminMenuItemsResponseItem.parse(snakeToCamel(rows[0])));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -264,7 +273,7 @@ router.patch("/admin/menu/:id", adminAuth, async (req, res): Promise<void> => {
       res.status(404).json({ error: "Menu item not found" });
       return;
     }
-    res.json(UpdateAdminMenuItemResponse.parse(rows[0]));
+    res.json(UpdateAdminMenuItemResponse.parse(snakeToCamel(rows[0])));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -294,7 +303,7 @@ router.delete("/admin/menu/:id", adminAuth, async (req, res): Promise<void> => {
 router.get("/admin/orders", async (_req, res): Promise<void> => {
   try {
     const { rows } = await pool.query("SELECT * FROM orders ORDER BY created_at DESC");
-    res.json(rows.map((o: any) => ListAdminOrdersResponseItem.parse({ ...o, branch: o.branch ?? "Main" })));
+    res.json(rows.map((o: any) => ListAdminOrdersResponseItem.parse({ ...snakeToCamel(o), branch: o.branch ?? "Main" })));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -321,7 +330,7 @@ router.patch("/admin/orders/:id/status", adminAuth, async (req, res): Promise<vo
       res.status(404).json({ error: "Order not found" });
       return;
     }
-    res.json(UpdateAdminOrderStatusResponse.parse({ ...rows[0], branch: rows[0].branch ?? "Main" }));
+    res.json(UpdateAdminOrderStatusResponse.parse({ ...snakeToCamel(rows[0]), branch: rows[0].branch ?? "Main" }));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
