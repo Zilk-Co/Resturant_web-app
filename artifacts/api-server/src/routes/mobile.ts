@@ -1,18 +1,14 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import pool from "../db.js";
 
 const router: IRouter = Router();
-
-const DATA_DIR = join(process.cwd(), "data");
 
 // ── Menu ────────────────────────────────────────────────────────────
 
 router.get("/mobile/menu", async (_req: Request, res: Response): Promise<void> => {
   try {
-    const store = JSON.parse(await readFile(join(DATA_DIR, "store.json"), "utf-8"));
-    const items = (store.menuItems || []).filter((m: any) => m.available !== false);
-    res.json(items);
+    const { rows } = await pool.query("SELECT * FROM menu_items WHERE available = true ORDER BY id");
+    res.json(rows);
   } catch {
     res.json([]);
   }
@@ -20,8 +16,8 @@ router.get("/mobile/menu", async (_req: Request, res: Response): Promise<void> =
 
 router.get("/mobile/categories", async (_req: Request, res: Response): Promise<void> => {
   try {
-    const store = JSON.parse(await readFile(join(DATA_DIR, "store.json"), "utf-8"));
-    res.json(store.categories || []);
+    const { rows } = await pool.query("SELECT * FROM categories ORDER BY name");
+    res.json(rows);
   } catch {
     res.json([]);
   }
@@ -35,40 +31,20 @@ router.post("/mobile/orders", async (req: Request, res: Response): Promise<void>
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const storePath = join(DATA_DIR, "store.json");
-  let store: any = { menuItems: [], orders: [], categories: [] };
-  try {
-    store = JSON.parse(await readFile(storePath, "utf-8"));
-  } catch {}
 
   const orderId = `THB${Date.now().toString().slice(-6)}`;
 
-  const order = {
-    id: orderId,
-    customerName,
-    customerPhone,
-    orderType: orderType || "takeaway",
-    items: items.map((i: any) => ({
-      name: i.name,
-      quantity: i.quantity,
-      price: i.price,
-    })),
-    subtotal: Number(subtotal) || 0,
-    tax: Number(tax) || 0,
-    deliveryFee: Number(deliveryFee) || 0,
-    total: Number(total) || 0,
-    status: "Received",
-    createdAt: new Date().toISOString(),
-    deliveryAddress: deliveryAddress || null,
-    specialInstructions: specialInstructions || null,
-    paymentMethod: paymentMethod || "cod",
-  };
-
-  store.orders = [order, ...(store.orders || [])];
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(storePath, JSON.stringify(store, null, 2), "utf-8");
-
-  res.status(201).json(order);
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO orders (id, customer_name, customer_phone, order_type, items, subtotal, tax, delivery_fee, total, status, delivery_address, special_instructions, payment_method)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'Received',$10,$11,$12) RETURNING *`,
+      [orderId, customerName, customerPhone, orderType || "takeaway", JSON.stringify(items.map((i: any) => ({ name: i.name, quantity: i.quantity, price: i.price }))),
+       subtotal || 0, tax || 0, deliveryFee || 0, total || 0, deliveryAddress || null, specialInstructions || null, paymentMethod || "cod"]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to create order" });
+  }
 });
 
 router.get("/mobile/orders", async (req: Request, res: Response): Promise<void> => {
@@ -78,11 +54,11 @@ router.get("/mobile/orders", async (req: Request, res: Response): Promise<void> 
     return;
   }
   try {
-    const store = JSON.parse(await readFile(join(DATA_DIR, "store.json"), "utf-8"));
-    const userOrders = (store.orders || [])
-      .filter((o: any) => o.customerPhone === phone)
-      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    res.json(userOrders);
+    const { rows } = await pool.query(
+      "SELECT * FROM orders WHERE customer_phone = $1 ORDER BY created_at DESC",
+      [phone]
+    );
+    res.json(rows);
   } catch {
     res.json([]);
   }
@@ -96,28 +72,17 @@ router.post("/mobile/reservations", async (req: Request, res: Response): Promise
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const storePath = join(DATA_DIR, "store.json");
-  let store: any = { menuItems: [], orders: [], categories: [], reservations: [] };
+
   try {
-    store = JSON.parse(await readFile(storePath, "utf-8"));
-  } catch {}
-
-  const reservation = {
-    id: `RES${Date.now().toString().slice(-6)}`,
-    customerName,
-    customerPhone,
-    date,
-    time,
-    partySize: Number(partySize) || 2,
-    status: "confirmed",
-    createdAt: new Date().toISOString(),
-  };
-
-  store.reservations = [reservation, ...(store.reservations || [])];
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(storePath, JSON.stringify(store, null, 2), "utf-8");
-
-  res.status(201).json(reservation);
+    const { rows } = await pool.query(
+      `INSERT INTO reservations (id, customer_name, customer_phone, date, time, party_size, status)
+       VALUES ($1,$2,$3,$4,$5,$6,'confirmed') RETURNING *`,
+      [`RES${Date.now().toString().slice(-6)}`, customerName, customerPhone, date, time, partySize || 2]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to create reservation" });
+  }
 });
 
 router.get("/mobile/reservations", async (req: Request, res: Response): Promise<void> => {
@@ -127,11 +92,11 @@ router.get("/mobile/reservations", async (req: Request, res: Response): Promise<
     return;
   }
   try {
-    const store = JSON.parse(await readFile(join(DATA_DIR, "store.json"), "utf-8"));
-    const userReservations = (store.reservations || [])
-      .filter((r: any) => r.customerPhone === phone)
-      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    res.json(userReservations);
+    const { rows } = await pool.query(
+      "SELECT * FROM reservations WHERE customer_phone = $1 ORDER BY created_at DESC",
+      [phone]
+    );
+    res.json(rows);
   } catch {
     res.json([]);
   }

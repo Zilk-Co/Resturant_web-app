@@ -1,10 +1,8 @@
 import { Router } from "express";
-import fs from "fs";
-import path from "path";
-import { adminAuth } from "./admin";
+import pool from "../db.js";
+import { adminAuth } from "./admin.js";
 
 const router = Router();
-const DATA_FILE = path.join(process.cwd(), "data", "reviews.json");
 
 const BANNED_WORDS = [
   "fuck", "shit", "damn", "ass", "bitch", "bastard", "crap", "dick",
@@ -17,138 +15,108 @@ function containsBannedWords(text: string): boolean {
   return BANNED_WORDS.some((word) => lower.includes(word));
 }
 
-function readReviews(): any[] {
-  try {
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.writeFileSync(DATA_FILE, "[]", "utf-8");
-      return [];
-    }
-    return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-  } catch {
-    return [];
-  }
-}
-
-function writeReviews(reviews: any[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(reviews, null, 2), "utf-8");
-}
-
 // Public: Get all approved reviews (mobile)
-router.get("/mobile/reviews", (_req, res) => {
-  const reviews = readReviews();
-  const approved = reviews.filter((r: any) => r.approved !== false);
-  approved.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  res.json(approved);
+router.get("/mobile/reviews", async (_req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM reviews WHERE approved = true ORDER BY date DESC");
+    res.json(rows);
+  } catch {
+    res.json([]);
+  }
 });
 
 // Public: Get all approved reviews (website)
-router.get("/website/reviews", (_req, res) => {
-  const reviews = readReviews();
-  const approved = reviews.filter((r: any) => r.approved !== false);
-  approved.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  res.json(approved);
+router.get("/website/reviews", async (_req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM reviews WHERE approved = true ORDER BY date DESC");
+    res.json(rows);
+  } catch {
+    res.json([]);
+  }
 });
 
 // Shared: Submit a review handler
 function handlePostReview(req: any, res: any) {
-  const { rating, text, imageUrl } = req.body;
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.replace("Bearer ", "");
+  (async () => {
+    const { rating, text, imageUrl } = req.body;
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace("Bearer ", "");
 
-  let userName = "Anonymous";
-  let userId = "anonymous";
-  if (token) {
-    try {
-      const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
-      userName = payload.name || payload.phone || "Anonymous";
-      userId = payload.userId || payload.sub || "anonymous";
-    } catch {}
-  }
-
-  if (!rating || typeof rating !== "number" || rating < 1 || rating > 5) {
-    return res.status(400).json({ error: "Rating must be between 1 and 5" });
-  }
-  if (!text || typeof text !== "string" || text.trim().length < 10) {
-    return res.status(400).json({ error: "Review must be at least 10 characters" });
-  }
-  if (text.trim().length > 500) {
-    return res.status(400).json({ error: "Review must be under 500 characters" });
-  }
-  if (containsBannedWords(text)) {
-    return res.status(400).json({ error: "Review contains inappropriate language" });
-  }
-
-  if (imageUrl && typeof imageUrl === "string") {
-    if (imageUrl.startsWith("data:")) {
-      const mimeMatch = imageUrl.match(/^data:(image\/\w+);/);
-      if (!mimeMatch) {
-        return res.status(400).json({ error: "Invalid image format" });
-      }
-      const mime = mimeMatch[1];
-      if (!["image/jpeg", "image/png", "image/webp"].includes(mime)) {
-        return res.status(400).json({ error: "Only JPG, PNG, and WebP images are allowed" });
-      }
-      const base64Data = imageUrl.split(",")[1] || "";
-      const sizeBytes = (base64Data.length * 3) / 4;
-      if (sizeBytes > 5 * 1024 * 1024) {
-        return res.status(400).json({ error: "Image must be under 5MB" });
-      }
+    let userName = "Anonymous";
+    let userId = "anonymous";
+    if (token) {
+      try {
+        const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+        userName = payload.name || payload.phone || "Anonymous";
+        userId = payload.userId || payload.sub || "anonymous";
+      } catch {}
     }
-  }
 
-  const review = {
-    id: `rev_${Date.now()}`,
-    userId,
-    userName,
-    rating: Math.round(rating),
-    text: text.trim(),
-    imageUrl: imageUrl || null,
-    date: new Date().toISOString(),
-    approved: true,
-  };
+    if (!rating || typeof rating !== "number" || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: "Rating must be between 1 and 5" });
+    }
+    if (!text || typeof text !== "string" || text.trim().length < 10) {
+      return res.status(400).json({ error: "Review must be at least 10 characters" });
+    }
+    if (text.trim().length > 500) {
+      return res.status(400).json({ error: "Review must be under 500 characters" });
+    }
+    if (containsBannedWords(text)) {
+      return res.status(400).json({ error: "Review contains inappropriate language" });
+    }
 
-  const reviews = readReviews();
-  reviews.push(review);
-  writeReviews(reviews);
-
-  res.status(201).json(review);
+    try {
+      const { rows } = await pool.query(
+        `INSERT INTO reviews (id, user_id, user_name, rating, text, image_url, approved)
+         VALUES ($1,$2,$3,$4,$5,$6,true) RETURNING *`,
+        [`rev_${Date.now()}`, userId, userName, Math.round(rating), text.trim(), imageUrl || null]
+      );
+      res.status(201).json(rows[0]);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  })();
 }
 
-// Submit a review (mobile + website share same handler)
 router.post("/mobile/reviews", handlePostReview);
 router.post("/website/reviews", handlePostReview);
 
 // Admin: Get all reviews
-router.get("/admin/reviews", (_req, res) => {
-  const reviews = readReviews();
-  reviews.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  res.json(reviews);
+router.get("/admin/reviews", async (_req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM reviews ORDER BY date DESC");
+    res.json(rows);
+  } catch {
+    res.json([]);
+  }
 });
 
 // Admin: Delete a review
-router.delete("/admin/reviews/:id", adminAuth, (req, res) => {
+router.delete("/admin/reviews/:id", adminAuth, async (req, res) => {
   const { id } = req.params;
-  const reviews = readReviews();
-  const filtered = reviews.filter((r: any) => r.id !== id);
-  if (filtered.length === reviews.length) {
-    return res.status(404).json({ error: "Review not found" });
+  try {
+    const { rowCount } = await pool.query("DELETE FROM reviews WHERE id = $1", [id]);
+    if (rowCount === 0) return res.status(404).json({ error: "Review not found" });
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-  writeReviews(filtered);
-  res.json({ ok: true });
 });
 
 // Admin: Toggle approval
-router.patch("/admin/reviews/:id", adminAuth, (req, res) => {
+router.patch("/admin/reviews/:id", adminAuth, async (req, res) => {
   const { id } = req.params;
   const { approved } = req.body;
-  const reviews = readReviews();
-  const review = reviews.find((r: any) => r.id === id);
-  if (!review) {
-    return res.status(404).json({ error: "Review not found" });
+  try {
+    const { rows } = await pool.query(
+      "UPDATE reviews SET approved = $1 WHERE id = $2 RETURNING *",
+      [approved, id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: "Review not found" });
+    res.json(rows[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-  review.approved = approved;
-  writeReviews(reviews);
-  res.json(review);
 });
 
 export default router;

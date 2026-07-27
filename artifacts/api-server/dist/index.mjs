@@ -15302,11 +15302,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path2) {
-      if (!path2 || typeof path2 !== "string") {
+    function lookup(path) {
+      if (!path || typeof path !== "string") {
         return false;
       }
-      var extension2 = extname2("x." + path2).toLowerCase().slice(1);
+      var extension2 = extname2("x." + path).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -18777,13 +18777,13 @@ var require_view = __commonJS({
   "../../node_modules/.pnpm/express@5.2.1/node_modules/express/lib/view.js"(exports, module) {
     "use strict";
     var debug = require_src()("express:view");
-    var path2 = __require("node:path");
-    var fs2 = __require("node:fs");
-    var dirname = path2.dirname;
-    var basename = path2.basename;
-    var extname2 = path2.extname;
-    var join8 = path2.join;
-    var resolve = path2.resolve;
+    var path = __require("node:path");
+    var fs = __require("node:fs");
+    var dirname = path.dirname;
+    var basename = path.basename;
+    var extname2 = path.extname;
+    var join3 = path.join;
+    var resolve = path.resolve;
     module.exports = View;
     function View(name, options) {
       var opts = options || {};
@@ -18812,17 +18812,17 @@ var require_view = __commonJS({
       this.path = this.lookup(fileName);
     }
     View.prototype.lookup = function lookup(name) {
-      var path3;
+      var path2;
       var roots = [].concat(this.root);
       debug('lookup "%s"', name);
-      for (var i = 0; i < roots.length && !path3; i++) {
+      for (var i = 0; i < roots.length && !path2; i++) {
         var root = roots[i];
         var loc = resolve(root, name);
         var dir = dirname(loc);
         var file = basename(loc);
-        path3 = this.resolve(dir, file);
+        path2 = this.resolve(dir, file);
       }
-      return path3;
+      return path2;
     };
     View.prototype.render = function render(options, callback) {
       var sync = true;
@@ -18844,21 +18844,21 @@ var require_view = __commonJS({
     };
     View.prototype.resolve = function resolve2(dir, file) {
       var ext = this.ext;
-      var path3 = join8(dir, file);
-      var stat = tryStat(path3);
+      var path2 = join3(dir, file);
+      var stat = tryStat(path2);
       if (stat && stat.isFile()) {
-        return path3;
+        return path2;
       }
-      path3 = join8(dir, basename(file, ext), "index" + ext);
-      stat = tryStat(path3);
+      path2 = join3(dir, basename(file, ext), "index" + ext);
+      stat = tryStat(path2);
       if (stat && stat.isFile()) {
-        return path3;
+        return path2;
       }
     };
-    function tryStat(path3) {
-      debug('stat "%s"', path3);
+    function tryStat(path2) {
+      debug('stat "%s"', path2);
       try {
-        return fs2.statSync(path3);
+        return fs.statSync(path2);
       } catch (e) {
         return void 0;
       }
@@ -19994,15 +19994,15 @@ var require_dist = __commonJS({
       let index = 0;
       function consumeUntil(end) {
         const output = [];
-        let path2 = "";
+        let path = "";
         function writePath() {
-          if (!path2)
+          if (!path)
             return;
           output.push({
             type: "text",
-            value: encodePath(path2)
+            value: encodePath(path)
           });
-          path2 = "";
+          path = "";
         }
         while (index < chars.length) {
           const value = chars[index++];
@@ -20014,7 +20014,7 @@ var require_dist = __commonJS({
             if (index === chars.length) {
               throw new PathError(`Unexpected end after \\ at index ${index}`, str);
             }
-            path2 += chars[index++];
+            path += chars[index++];
             continue;
           }
           if (value === ":" || value === "*") {
@@ -20058,7 +20058,7 @@ var require_dist = __commonJS({
           if (value === "}" || value === "(" || value === ")" || value === "[" || value === "]" || value === "+" || value === "?" || value === "!") {
             throw new PathError(`Unexpected ${value} at index ${index - 1}`, str);
           }
-          path2 += value;
+          path += value;
         }
         if (end) {
           throw new PathError(`Unexpected end at index ${index}, expected ${end}`, str);
@@ -20068,17 +20068,17 @@ var require_dist = __commonJS({
       }
       return new TokenData(consumeUntil(""), str);
     }
-    function compile(path2, options = {}) {
+    function compile(path, options = {}) {
       const { encode = encodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const data = typeof path2 === "object" ? path2 : parse(path2, options);
+      const data = typeof path === "object" ? path : parse(path, options);
       const fn = tokensToFunction(data.tokens, delimiter, encode);
-      return function path3(params = {}) {
+      return function path2(params = {}) {
         const missing = [];
-        const path4 = fn(params, missing);
+        const path3 = fn(params, missing);
         if (missing.length) {
           throw new TypeError(`Missing parameters: ${missing.join(", ")}`);
         }
-        return path4;
+        return path3;
       };
     }
     function tokensToFunction(tokens, delimiter, encode) {
@@ -20140,9 +20140,9 @@ var require_dist = __commonJS({
         return encodeValue(value);
       };
     }
-    function match(path2, options = {}) {
+    function match(path, options = {}) {
       const { decode = decodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const { regexp, keys } = pathToRegexp(path2, options);
+      const { regexp, keys } = pathToRegexp(path, options);
       const decoders = keys.map((key) => {
         if (decode === false)
           return NOOP_VALUE;
@@ -20154,7 +20154,7 @@ var require_dist = __commonJS({
         const m = regexp.exec(input);
         if (!m)
           return false;
-        const path3 = m[0];
+        const path2 = m[0];
         const params = /* @__PURE__ */ Object.create(null);
         for (let i = 1; i < m.length; i++) {
           if (m[i] === void 0)
@@ -20163,21 +20163,21 @@ var require_dist = __commonJS({
           const decoder = decoders[i - 1];
           params[key.name] = decoder(m[i]);
         }
-        return { path: path3, params };
+        return { path: path2, params };
       };
     }
-    function pathToRegexp(path2, options = {}) {
+    function pathToRegexp(path, options = {}) {
       const { delimiter = DEFAULT_DELIMITER, end = true, sensitive = false, trailing = true } = options;
       const keys = [];
       let source = "";
       let combinations = 0;
-      function process2(path3) {
-        if (Array.isArray(path3)) {
-          for (const p of path3)
+      function process2(path2) {
+        if (Array.isArray(path2)) {
+          for (const p of path2)
             process2(p);
           return;
         }
-        const data = typeof path3 === "object" ? path3 : parse(path3, options);
+        const data = typeof path2 === "object" ? path2 : parse(path2, options);
         flatten(data.tokens, 0, [], (tokens) => {
           if (combinations >= 256) {
             throw new PathError("Too many path combinations", data.originalPath);
@@ -20188,7 +20188,7 @@ var require_dist = __commonJS({
           combinations++;
         });
       }
-      process2(path2);
+      process2(path);
       let pattern = `^(?:${source})`;
       if (trailing)
         pattern += "(?:" + escape2(delimiter) + "$)?";
@@ -20328,18 +20328,18 @@ var require_layer = __commonJS({
     var TRAILING_SLASH_REGEXP = /\/+$/;
     var MATCHING_GROUP_REGEXP = /\((?:\?<(.*?)>)?(?!\?)/g;
     module.exports = Layer;
-    function Layer(path2, options, fn) {
+    function Layer(path, options, fn) {
       if (!(this instanceof Layer)) {
-        return new Layer(path2, options, fn);
+        return new Layer(path, options, fn);
       }
-      debug("new %o", path2);
+      debug("new %o", path);
       const opts = options || {};
       this.handle = fn;
       this.keys = [];
       this.name = fn.name || "<anonymous>";
       this.params = void 0;
       this.path = void 0;
-      this.slash = path2 === "/" && opts.end === false;
+      this.slash = path === "/" && opts.end === false;
       function matcher(_path) {
         if (_path instanceof RegExp) {
           const keys = [];
@@ -20378,7 +20378,7 @@ var require_layer = __commonJS({
           decode: decodeParam
         });
       }
-      this.matchers = Array.isArray(path2) ? path2.map(matcher) : [matcher(path2)];
+      this.matchers = Array.isArray(path) ? path.map(matcher) : [matcher(path)];
     }
     Layer.prototype.handleError = function handleError(error, req, res, next) {
       const fn = this.handle;
@@ -20418,9 +20418,9 @@ var require_layer = __commonJS({
         next(err);
       }
     };
-    Layer.prototype.match = function match(path2) {
+    Layer.prototype.match = function match(path) {
       let match2;
-      if (path2 != null) {
+      if (path != null) {
         if (this.slash) {
           this.params = {};
           this.path = "";
@@ -20428,7 +20428,7 @@ var require_layer = __commonJS({
         }
         let i = 0;
         while (!match2 && i < this.matchers.length) {
-          match2 = this.matchers[i](path2);
+          match2 = this.matchers[i](path);
           i++;
         }
       }
@@ -20456,13 +20456,13 @@ var require_layer = __commonJS({
         throw err;
       }
     }
-    function loosen(path2) {
-      if (path2 instanceof RegExp || path2 === "/") {
-        return path2;
+    function loosen(path) {
+      if (path instanceof RegExp || path === "/") {
+        return path;
       }
-      return Array.isArray(path2) ? path2.map(function(p) {
+      return Array.isArray(path) ? path.map(function(p) {
         return loosen(p);
-      }) : String(path2).replace(TRAILING_SLASH_REGEXP, "");
+      }) : String(path).replace(TRAILING_SLASH_REGEXP, "");
     }
   }
 });
@@ -20478,9 +20478,9 @@ var require_route = __commonJS({
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
     module.exports = Route;
-    function Route(path2) {
-      debug("new %o", path2);
-      this.path = path2;
+    function Route(path) {
+      debug("new %o", path);
+      this.path = path;
       this.stack = [];
       this.methods = /* @__PURE__ */ Object.create(null);
     }
@@ -20688,8 +20688,8 @@ var require_router = __commonJS({
         if (++sync > 100) {
           return setImmediate(next, err);
         }
-        const path2 = getPathname(req);
-        if (path2 == null) {
+        const path = getPathname(req);
+        if (path == null) {
           return done(layerError);
         }
         let layer;
@@ -20697,7 +20697,7 @@ var require_router = __commonJS({
         let route;
         while (match !== true && idx < stack.length) {
           layer = stack[idx++];
-          match = matchLayer(layer, path2);
+          match = matchLayer(layer, path);
           route = layer.route;
           if (typeof match !== "boolean") {
             layerError = layerError || match;
@@ -20735,18 +20735,18 @@ var require_router = __commonJS({
           } else if (route) {
             layer.handleRequest(req, res, next);
           } else {
-            trimPrefix(layer, layerError, layerPath, path2);
+            trimPrefix(layer, layerError, layerPath, path);
           }
           sync = 0;
         });
       }
-      function trimPrefix(layer, layerError, layerPath, path2) {
+      function trimPrefix(layer, layerError, layerPath, path) {
         if (layerPath.length !== 0) {
-          if (layerPath !== path2.substring(0, layerPath.length)) {
+          if (layerPath !== path.substring(0, layerPath.length)) {
             next(layerError);
             return;
           }
-          const c = path2[layerPath.length];
+          const c = path[layerPath.length];
           if (c && c !== "/") {
             next(layerError);
             return;
@@ -20770,7 +20770,7 @@ var require_router = __commonJS({
     };
     Router11.prototype.use = function use(handler) {
       let offset = 0;
-      let path2 = "/";
+      let path = "/";
       if (typeof handler !== "function") {
         let arg = handler;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -20778,7 +20778,7 @@ var require_router = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path2 = handler;
+          path = handler;
         }
       }
       const callbacks = flatten.call(slice.call(arguments, offset), Infinity);
@@ -20790,8 +20790,8 @@ var require_router = __commonJS({
         if (typeof fn !== "function") {
           throw new TypeError("argument handler must be a function");
         }
-        debug("use %o %s", path2, fn.name || "<anonymous>");
-        const layer = new Layer(path2, {
+        debug("use %o %s", path, fn.name || "<anonymous>");
+        const layer = new Layer(path, {
           sensitive: this.caseSensitive,
           strict: false,
           end: false
@@ -20801,9 +20801,9 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router11.prototype.route = function route(path2) {
-      const route2 = new Route(path2);
-      const layer = new Layer(path2, {
+    Router11.prototype.route = function route(path) {
+      const route2 = new Route(path);
+      const layer = new Layer(path, {
         sensitive: this.caseSensitive,
         strict: this.strict,
         end: true
@@ -20816,8 +20816,8 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router11.prototype[method] = function(path2) {
-        const route = this.route(path2);
+      Router11.prototype[method] = function(path) {
+        const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
@@ -20846,9 +20846,9 @@ var require_router = __commonJS({
       const fqdnIndex = url.substring(0, pathLength).indexOf("://");
       return fqdnIndex !== -1 ? url.substring(0, url.indexOf("/", 3 + fqdnIndex)) : void 0;
     }
-    function matchLayer(layer, path2) {
+    function matchLayer(layer, path) {
       try {
-        return layer.match(path2);
+        return layer.match(path);
       } catch (err) {
         return err;
       }
@@ -21076,7 +21076,7 @@ var require_application = __commonJS({
     };
     app2.use = function use(fn) {
       var offset = 0;
-      var path2 = "/";
+      var path = "/";
       if (typeof fn !== "function") {
         var arg = fn;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -21084,7 +21084,7 @@ var require_application = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path2 = fn;
+          path = fn;
         }
       }
       var fns = flatten.call(slice.call(arguments, offset), Infinity);
@@ -21094,12 +21094,12 @@ var require_application = __commonJS({
       var router11 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router11.use(path2, fn2);
+          return router11.use(path, fn2);
         }
-        debug(".use app under %s", path2);
-        fn2.mountpath = path2;
+        debug(".use app under %s", path);
+        fn2.mountpath = path;
         fn2.parent = this;
-        router11.use(path2, function mounted_app(req, res, next) {
+        router11.use(path, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -21111,8 +21111,8 @@ var require_application = __commonJS({
       }, this);
       return this;
     };
-    app2.route = function route(path2) {
-      return this.router.route(path2);
+    app2.route = function route(path) {
+      return this.router.route(path);
     };
     app2.engine = function engine(ext, fn) {
       if (typeof fn !== "function") {
@@ -21155,7 +21155,7 @@ var require_application = __commonJS({
       }
       return this;
     };
-    app2.path = function path2() {
+    app2.path = function path() {
       return this.parent ? this.parent.path() + this.mountpath : "";
     };
     app2.enabled = function enabled(setting) {
@@ -21171,17 +21171,17 @@ var require_application = __commonJS({
       return this.set(setting, false);
     };
     methods.forEach(function(method) {
-      app2[method] = function(path2) {
+      app2[method] = function(path) {
         if (method === "get" && arguments.length === 1) {
-          return this.set(path2);
+          return this.set(path);
         }
-        var route = this.route(path2);
+        var route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
     });
-    app2.all = function all(path2) {
-      var route = this.route(path2);
+    app2.all = function all(path) {
+      var route = this.route(path);
       var args = slice.call(arguments, 1);
       for (var i = 0; i < methods.length; i++) {
         route[methods[i]].apply(route, args);
@@ -22091,7 +22091,7 @@ var require_request = __commonJS({
       var subdomains2 = !isIP(hostname) ? hostname.split(".").reverse() : [hostname];
       return subdomains2.slice(offset);
     });
-    defineGetter(req, "path", function path2() {
+    defineGetter(req, "path", function path() {
       return parse(this).pathname;
     });
     defineGetter(req, "host", function host() {
@@ -22302,8 +22302,8 @@ var require_content_disposition = __commonJS({
       this.type = type;
       this.parameters = parameters;
     }
-    function basename(path2) {
-      const normalized = path2.replaceAll("\\", "/");
+    function basename(path) {
+      const normalized = path.replaceAll("\\", "/");
       let end = normalized.length;
       while (end > 0 && normalized[end - 1] === "/") {
         end--;
@@ -22544,32 +22544,32 @@ var require_send = __commonJS({
     var escapeHtml = require_escape_html();
     var etag = require_etag();
     var fresh = require_fresh();
-    var fs2 = __require("fs");
+    var fs = __require("fs");
     var mime = require_mime_types();
     var ms = require_ms();
     var onFinished = require_on_finished();
     var parseRange = require_range_parser();
-    var path2 = __require("path");
+    var path = __require("path");
     var statuses = require_statuses();
     var Stream = __require("stream");
     var util = __require("util");
-    var extname2 = path2.extname;
-    var join8 = path2.join;
-    var normalize = path2.normalize;
-    var resolve = path2.resolve;
-    var sep = path2.sep;
+    var extname2 = path.extname;
+    var join3 = path.join;
+    var normalize = path.normalize;
+    var resolve = path.resolve;
+    var sep = path.sep;
     var BYTES_RANGE_REGEXP = /^ *bytes=/;
     var MAX_MAXAGE = 60 * 60 * 24 * 365 * 1e3;
     var UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
     module.exports = send;
-    function send(req, path3, options) {
-      return new SendStream(req, path3, options);
+    function send(req, path2, options) {
+      return new SendStream(req, path2, options);
     }
-    function SendStream(req, path3, options) {
+    function SendStream(req, path2, options) {
       Stream.call(this);
       var opts = options || {};
       this.options = opts;
-      this.path = path3;
+      this.path = path2;
       this.req = req;
       this._acceptRanges = opts.acceptRanges !== void 0 ? Boolean(opts.acceptRanges) : true;
       this._cacheControl = opts.cacheControl !== void 0 ? Boolean(opts.cacheControl) : true;
@@ -22683,10 +22683,10 @@ var require_send = __commonJS({
       var lastModified = this.res.getHeader("Last-Modified");
       return parseHttpDate(lastModified) <= parseHttpDate(ifRange);
     };
-    SendStream.prototype.redirect = function redirect(path3) {
+    SendStream.prototype.redirect = function redirect(path2) {
       var res = this.res;
       if (hasListeners(this, "directory")) {
-        this.emit("directory", res, path3);
+        this.emit("directory", res, path2);
         return;
       }
       if (this.hasTrailingSlash()) {
@@ -22706,38 +22706,38 @@ var require_send = __commonJS({
     SendStream.prototype.pipe = function pipe(res) {
       var root = this._root;
       this.res = res;
-      var path3 = decode(this.path);
-      if (path3 === -1) {
+      var path2 = decode(this.path);
+      if (path2 === -1) {
         this.error(400);
         return res;
       }
-      if (~path3.indexOf("\0")) {
+      if (~path2.indexOf("\0")) {
         this.error(400);
         return res;
       }
       var parts;
       if (root !== null) {
-        if (path3) {
-          path3 = normalize("." + sep + path3);
+        if (path2) {
+          path2 = normalize("." + sep + path2);
         }
-        if (UP_PATH_REGEXP.test(path3)) {
-          debug('malicious path "%s"', path3);
+        if (UP_PATH_REGEXP.test(path2)) {
+          debug('malicious path "%s"', path2);
           this.error(403);
           return res;
         }
-        parts = path3.split(sep);
-        path3 = normalize(join8(root, path3));
+        parts = path2.split(sep);
+        path2 = normalize(join3(root, path2));
       } else {
-        if (UP_PATH_REGEXP.test(path3)) {
-          debug('malicious path "%s"', path3);
+        if (UP_PATH_REGEXP.test(path2)) {
+          debug('malicious path "%s"', path2);
           this.error(403);
           return res;
         }
-        parts = normalize(path3).split(sep);
-        path3 = resolve(path3);
+        parts = normalize(path2).split(sep);
+        path2 = resolve(path2);
       }
       if (containsDotFile(parts)) {
-        debug('%s dotfile "%s"', this._dotfiles, path3);
+        debug('%s dotfile "%s"', this._dotfiles, path2);
         switch (this._dotfiles) {
           case "allow":
             break;
@@ -22751,13 +22751,13 @@ var require_send = __commonJS({
         }
       }
       if (this._index.length && this.hasTrailingSlash()) {
-        this.sendIndex(path3);
+        this.sendIndex(path2);
         return res;
       }
-      this.sendFile(path3);
+      this.sendFile(path2);
       return res;
     };
-    SendStream.prototype.send = function send2(path3, stat) {
+    SendStream.prototype.send = function send2(path2, stat) {
       var len = stat.size;
       var options = this.options;
       var opts = {};
@@ -22769,9 +22769,9 @@ var require_send = __commonJS({
         this.headersAlreadySent();
         return;
       }
-      debug('pipe "%s"', path3);
-      this.setHeader(path3, stat);
-      this.type(path3);
+      debug('pipe "%s"', path2);
+      this.setHeader(path2, stat);
+      this.type(path2);
       if (this.isConditionalGET()) {
         if (this.isPreconditionFailure()) {
           this.error(412);
@@ -22820,30 +22820,30 @@ var require_send = __commonJS({
         res.end();
         return;
       }
-      this.stream(path3, opts);
+      this.stream(path2, opts);
     };
-    SendStream.prototype.sendFile = function sendFile(path3) {
+    SendStream.prototype.sendFile = function sendFile(path2) {
       var i = 0;
       var self = this;
-      debug('stat "%s"', path3);
-      fs2.stat(path3, function onstat(err, stat) {
-        var pathEndsWithSep = path3[path3.length - 1] === sep;
-        if (err && err.code === "ENOENT" && !extname2(path3) && !pathEndsWithSep) {
+      debug('stat "%s"', path2);
+      fs.stat(path2, function onstat(err, stat) {
+        var pathEndsWithSep = path2[path2.length - 1] === sep;
+        if (err && err.code === "ENOENT" && !extname2(path2) && !pathEndsWithSep) {
           return next(err);
         }
         if (err) return self.onStatError(err);
-        if (stat.isDirectory()) return self.redirect(path3);
+        if (stat.isDirectory()) return self.redirect(path2);
         if (pathEndsWithSep) return self.error(404);
-        self.emit("file", path3, stat);
-        self.send(path3, stat);
+        self.emit("file", path2, stat);
+        self.send(path2, stat);
       });
       function next(err) {
         if (self._extensions.length <= i) {
           return err ? self.onStatError(err) : self.error(404);
         }
-        var p = path3 + "." + self._extensions[i++];
+        var p = path2 + "." + self._extensions[i++];
         debug('stat "%s"', p);
-        fs2.stat(p, function(err2, stat) {
+        fs.stat(p, function(err2, stat) {
           if (err2) return next(err2);
           if (stat.isDirectory()) return next();
           self.emit("file", p, stat);
@@ -22851,7 +22851,7 @@ var require_send = __commonJS({
         });
       }
     };
-    SendStream.prototype.sendIndex = function sendIndex(path3) {
+    SendStream.prototype.sendIndex = function sendIndex(path2) {
       var i = -1;
       var self = this;
       function next(err) {
@@ -22859,9 +22859,9 @@ var require_send = __commonJS({
           if (err) return self.onStatError(err);
           return self.error(404);
         }
-        var p = join8(path3, self._index[i]);
+        var p = join3(path2, self._index[i]);
         debug('stat "%s"', p);
-        fs2.stat(p, function(err2, stat) {
+        fs.stat(p, function(err2, stat) {
           if (err2) return next(err2);
           if (stat.isDirectory()) return next();
           self.emit("file", p, stat);
@@ -22870,10 +22870,10 @@ var require_send = __commonJS({
       }
       next();
     };
-    SendStream.prototype.stream = function stream(path3, options) {
+    SendStream.prototype.stream = function stream(path2, options) {
       var self = this;
       var res = this.res;
-      var stream2 = fs2.createReadStream(path3, options);
+      var stream2 = fs.createReadStream(path2, options);
       this.emit("stream", stream2);
       stream2.pipe(res);
       function cleanup() {
@@ -22888,17 +22888,17 @@ var require_send = __commonJS({
         self.emit("end");
       });
     };
-    SendStream.prototype.type = function type(path3) {
+    SendStream.prototype.type = function type(path2) {
       var res = this.res;
       if (res.getHeader("Content-Type")) return;
-      var ext = extname2(path3);
+      var ext = extname2(path2);
       var type2 = mime.contentType(ext) || "application/octet-stream";
       debug("content-type %s", type2);
       res.setHeader("Content-Type", type2);
     };
-    SendStream.prototype.setHeader = function setHeader(path3, stat) {
+    SendStream.prototype.setHeader = function setHeader(path2, stat) {
       var res = this.res;
-      this.emit("headers", res, path3, stat);
+      this.emit("headers", res, path2, stat);
       if (this._acceptRanges && !res.getHeader("Accept-Ranges")) {
         debug("accept ranges");
         res.setHeader("Accept-Ranges", "bytes");
@@ -22956,9 +22956,9 @@ var require_send = __commonJS({
       }
       return err instanceof Error ? createError(status, err, { expose: false }) : createError(status, err);
     }
-    function decode(path3) {
+    function decode(path2) {
       try {
-        return decodeURIComponent(path3);
+        return decodeURIComponent(path2);
       } catch (err) {
         return -1;
       }
@@ -23102,7 +23102,7 @@ var require_response = __commonJS({
     var http = __require("node:http");
     var onFinished = require_on_finished();
     var mime = require_mime_types();
-    var path2 = __require("node:path");
+    var path = __require("node:path");
     var pathIsAbsolute = __require("node:path").isAbsolute;
     var statuses = require_statuses();
     var sign = require_cookie_signature().sign;
@@ -23111,8 +23111,8 @@ var require_response = __commonJS({
     var setCharset = require_utils3().setCharset;
     var cookie = require_cookie();
     var send = require_send();
-    var extname2 = path2.extname;
-    var resolve = path2.resolve;
+    var extname2 = path.extname;
+    var resolve = path.resolve;
     var vary = require_vary();
     var { Buffer: Buffer2 } = __require("node:buffer");
     var res = Object.create(http.ServerResponse.prototype);
@@ -23258,26 +23258,26 @@ var require_response = __commonJS({
       this.type("txt");
       return this.send(body);
     };
-    res.sendFile = function sendFile(path3, options, callback) {
+    res.sendFile = function sendFile(path2, options, callback) {
       var done = callback;
       var req = this.req;
       var res2 = this;
       var next = req.next;
       var opts = options || {};
-      if (!path3) {
+      if (!path2) {
         throw new TypeError("path argument is required to res.sendFile");
       }
-      if (typeof path3 !== "string") {
+      if (typeof path2 !== "string") {
         throw new TypeError("path must be a string to res.sendFile");
       }
       if (typeof options === "function") {
         done = options;
         opts = {};
       }
-      if (!opts.root && !pathIsAbsolute(path3)) {
+      if (!opts.root && !pathIsAbsolute(path2)) {
         throw new TypeError("path must be absolute or specify root to res.sendFile");
       }
-      var pathname = encodeURI(path3);
+      var pathname = encodeURI(path2);
       opts.etag = this.app.enabled("etag");
       var file = send(req, pathname, opts);
       sendfile(res2, file, opts, function(err) {
@@ -23288,7 +23288,7 @@ var require_response = __commonJS({
         }
       });
     };
-    res.download = function download(path3, filename, options, callback) {
+    res.download = function download(path2, filename, options, callback) {
       var done = callback;
       var name = filename;
       var opts = options || null;
@@ -23305,7 +23305,7 @@ var require_response = __commonJS({
         opts = filename;
       }
       var headers = {
-        "Content-Disposition": contentDisposition(name || path3)
+        "Content-Disposition": contentDisposition(name || path2)
       };
       if (opts && opts.headers) {
         var keys = Object.keys(opts.headers);
@@ -23318,7 +23318,7 @@ var require_response = __commonJS({
       }
       opts = Object.create(opts);
       opts.headers = headers;
-      var fullPath = !opts.root ? resolve(path3) : path3;
+      var fullPath = !opts.root ? resolve(path2) : path2;
       return this.sendFile(fullPath, opts, done);
     };
     res.contentType = res.type = function contentType(type) {
@@ -23601,11 +23601,11 @@ var require_serve_static = __commonJS({
         }
         var forwardError = !fallthrough;
         var originalUrl = parseUrl.original(req);
-        var path2 = parseUrl(req).pathname;
-        if (path2 === "/" && originalUrl.pathname.substr(-1) !== "/") {
-          path2 = "";
+        var path = parseUrl(req).pathname;
+        if (path === "/" && originalUrl.pathname.substr(-1) !== "/") {
+          path = "";
         }
-        var stream = send(req, path2, opts);
+        var stream = send(req, path, opts);
         stream.on("directory", onDirectory);
         if (setHeaders) {
           stream.on("headers", setHeaders);
@@ -24366,8 +24366,8 @@ var require_req = __commonJS({
       if (req.originalUrl) {
         _req.url = req.originalUrl;
       } else {
-        const path2 = req.path;
-        _req.url = typeof path2 === "string" ? path2 : req.url ? req.url.path || req.url : void 0;
+        const path = req.path;
+        _req.url = typeof path === "string" ? path : req.url ? req.url.path || req.url : void 0;
       }
       if (req.query) {
         _req.query = req.query;
@@ -28750,8 +28750,6 @@ var health_default = router;
 // src/routes/admin.ts
 var import_express3 = __toESM(require_express2(), 1);
 var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
-import { readFile as readFile2, writeFile as writeFile2, mkdir as mkdir2 } from "fs/promises";
-import { join as join2 } from "path";
 
 // src/routes/auth.ts
 var import_express2 = __toESM(require_express2(), 1);
@@ -29766,185 +29764,16 @@ router2.delete("/mobile/auth/addresses/:id", async (req, res) => {
 });
 var auth_default = router2;
 
+// src/db.ts
+import pg from "pg";
+var pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+var db_default = pool;
+
 // src/routes/admin.ts
 var router3 = (0, import_express3.Router)();
-var DATA_DIR2 = join2(process.cwd(), "data");
-var DATA_FILE = join2(DATA_DIR2, "store.json");
-var DEFAULT_CATEGORIES = [
-  { id: "cat-deals", name: "Deals", slug: "deals", emoji: "\u{1F525}" },
-  { id: "cat-chicken", name: "Chicken", slug: "chicken", emoji: "\u{1F357}" },
-  { id: "cat-burgers", name: "Burgers", slug: "burgers", emoji: "\u{1F354}" },
-  { id: "cat-wraps", name: "Wraps", slug: "wraps", emoji: "\u{1F32F}" },
-  { id: "cat-sides", name: "Sides", slug: "sides", emoji: "\u{1F35F}" },
-  { id: "cat-beverages", name: "Beverages", slug: "beverages", emoji: "\u{1F964}" },
-  { id: "cat-desserts", name: "Desserts", slug: "desserts", emoji: "\u{1F370}" },
-  { id: "cat-pizza", name: "Pizza", slug: "pizza", emoji: "\u{1F355}" },
-  { id: "cat-pasta", name: "Pasta", slug: "pasta", emoji: "\u{1F35D}" },
-  { id: "cat-handi", name: "Handi", slug: "handi", emoji: "\u{1F372}" },
-  { id: "cat-mandi", name: "Mandi", slug: "mandi", emoji: "\u{1F35B}" }
-];
-var DEFAULT_MENU = [
-  { id: "m1", name: "Zinger Burger", description: "Crispy fried chicken fillet with spicy mayo and lettuce", price: 650, category: "Burgers", available: true, spicy: true, popular: true, calories: 520, imageUrl: null, callout: null },
-  { id: "m2", name: "THB Mighty Box", description: "2 pieces chicken, fries, coleslaw and a drink", price: 1200, category: "Deals", available: true, spicy: false, popular: true, calories: 1100, imageUrl: null, callout: null },
-  { id: "m3", name: "Crispy Strips (3pc)", description: "Tender chicken strips with your choice of dipping sauce", price: 490, category: "Chicken", available: true, spicy: false, popular: true, calories: 380, imageUrl: null, callout: null },
-  { id: "m4", name: "Spicy Wings (6pc)", description: "Hot and crispy chicken wings with THB signature spice blend", price: 580, category: "Chicken", available: true, spicy: true, popular: false, calories: 460, imageUrl: null, callout: null },
-  { id: "m5", name: "Chicken Wrap", description: "Grilled or crispy chicken in a soft tortilla with fresh veggies", price: 420, category: "Wraps", available: true, spicy: false, popular: false, calories: 340, imageUrl: null, callout: null },
-  { id: "m6", name: "Spicy Wrap", description: "Crispy chicken, jalape\xF1os, and hot sauce in a tortilla", price: 450, category: "Wraps", available: true, spicy: true, popular: false, calories: 360, imageUrl: null, callout: null },
-  { id: "m7", name: "Loaded Fries", description: "Crispy fries topped with cheese sauce and jalape\xF1os", price: 290, category: "Sides", available: true, spicy: false, popular: true, calories: 420, imageUrl: null, callout: "Check for real-time daily availability \u2014 Mutton dishes are prepared fresh each morning." },
-  { id: "m8", name: "Coleslaw", description: "Creamy house-made coleslaw", price: 120, category: "Sides", available: true, spicy: false, popular: false, calories: 130, imageUrl: null, callout: null },
-  { id: "m9", name: "Pepsi (Large)", description: "Chilled Pepsi 500ml", price: 150, category: "Beverages", available: true, spicy: false, popular: false, calories: 210, imageUrl: null, callout: null },
-  { id: "m10", name: "Chocolate Lava Cake", description: "Warm chocolate cake with a gooey molten center", price: 280, category: "Desserts", available: true, spicy: false, popular: true, calories: 380, imageUrl: null, callout: null },
-  { id: "m11", name: "Family Feast", description: "8pc chicken, 2 large fries, 4 drinks, coleslaw", price: 3200, category: "Deals", available: true, spicy: false, popular: true, calories: null, imageUrl: null, callout: null },
-  { id: "m12", name: "Quarter Pounder", description: "Juicy beef patty with THB special sauce", price: 720, category: "Burgers", available: true, spicy: false, popular: false, calories: 580, imageUrl: null, callout: null },
-  { id: "m13", name: "Istanbul Pizza", description: "Wood-fired pizza with spiced chicken, peppers, and mozzarella", price: 850, category: "Pizza", available: true, spicy: false, popular: true, calories: 650, imageUrl: null, callout: null },
-  { id: "m14", name: "Chicken Tikka Pizza", description: "Hand-tossed pizza with tikka chicken, onions, and cheddar blend", price: 900, category: "Pizza", available: true, spicy: true, popular: true, calories: 680, imageUrl: null, callout: null },
-  { id: "m15", name: "Creamy Alfredo Pasta", description: "Fettuccine in rich Alfredo sauce with grilled chicken", price: 750, category: "Pasta", available: true, spicy: false, popular: true, calories: 520, imageUrl: null, callout: "Check for real-time daily availability \u2014 Mutton Handi is slow-cooked daily." },
-  { id: "m16", name: "Mutton Handi", description: "Slow-cooked mutton in rich, aromatic gravy with traditional spices", price: 1200, category: "Handi", available: true, spicy: true, popular: true, calories: 580, imageUrl: null, callout: null },
-  { id: "m17", name: "Chicken Handi", description: "Tender chicken cooked in creamy tomato-based handi gravy", price: 950, category: "Handi", available: true, spicy: false, popular: true, calories: 450, imageUrl: null, callout: null },
-  { id: "m18", name: "Mutton Mandi", description: "Tender mutton cooked on charcoal with fragrant basmati rice and spices", price: 1500, category: "Mandi", available: true, spicy: false, popular: true, calories: 720, imageUrl: null, callout: null },
-  { id: "m19", name: "Chicken Mandi", description: "Charcoal-grilled chicken with aromatic rice, raita, and traditional sides", price: 1100, category: "Mandi", available: true, spicy: false, popular: true, calories: 620, imageUrl: null, callout: null }
-];
-var DEFAULT_ORDERS = [
-  {
-    id: "o1001",
-    customerName: "Ahmed Raza",
-    customerPhone: "0300-1234567",
-    orderType: "Dine In",
-    items: [{ name: "THB Mighty Box", quantity: 2, price: 1200 }, { name: "Pepsi (Large)", quantity: 2, price: 150 }],
-    total: 2700,
-    status: "Preparing",
-    createdAt: new Date(Date.now() - 15 * 6e4).toISOString()
-  },
-  {
-    id: "o1002",
-    customerName: "Sara Khan",
-    customerPhone: "0321-9876543",
-    orderType: "Delivery",
-    items: [{ name: "Zinger Burger", quantity: 1, price: 650 }, { name: "Loaded Fries", quantity: 1, price: 290 }, { name: "Pepsi (Large)", quantity: 1, price: 150 }],
-    total: 1090,
-    status: "Received",
-    createdAt: new Date(Date.now() - 5 * 6e4).toISOString()
-  },
-  {
-    id: "o1003",
-    customerName: "Bilal Akhtar",
-    customerPhone: "0333-5550123",
-    orderType: "Takeaway",
-    items: [{ name: "Crispy Strips (3pc)", quantity: 2, price: 490 }, { name: "Coleslaw", quantity: 1, price: 120 }],
-    total: 1100,
-    status: "Ready",
-    createdAt: new Date(Date.now() - 30 * 6e4).toISOString()
-  },
-  {
-    id: "o1004",
-    customerName: "Fatima Malik",
-    customerPhone: "0312-7771234",
-    orderType: "Delivery",
-    items: [{ name: "Family Feast", quantity: 1, price: 3200 }],
-    total: 3200,
-    status: "Delivered",
-    createdAt: new Date(Date.now() - 90 * 6e4).toISOString()
-  },
-  {
-    id: "o1005",
-    customerName: "Usman Tariq",
-    customerPhone: "0345-2223344",
-    orderType: "Dine In",
-    items: [{ name: "Spicy Wings (6pc)", quantity: 1, price: 580 }, { name: "Loaded Fries", quantity: 2, price: 290 }, { name: "Pepsi (Large)", quantity: 2, price: 150 }],
-    total: 1460,
-    status: "Preparing",
-    createdAt: new Date(Date.now() - 22 * 6e4).toISOString()
-  },
-  {
-    id: "o1006",
-    customerName: "Nadia Hussain",
-    customerPhone: "0311-4445566",
-    orderType: "Takeaway",
-    items: [{ name: "Chicken Wrap", quantity: 2, price: 420 }, { name: "Spicy Wrap", quantity: 1, price: 450 }],
-    total: 1290,
-    status: "Delivered",
-    createdAt: new Date(Date.now() - 120 * 6e4).toISOString()
-  }
-];
-async function loadStore() {
-  try {
-    const raw = await readFile2(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw);
-    return {
-      menuItems: parsed.menuItems ?? DEFAULT_MENU,
-      orders: parsed.orders ?? DEFAULT_ORDERS,
-      categories: parsed.categories ?? DEFAULT_CATEGORIES
-    };
-  } catch {
-    return { menuItems: DEFAULT_MENU, orders: DEFAULT_ORDERS, categories: DEFAULT_CATEGORIES };
-  }
-}
-async function saveStore(data) {
-  await mkdir2(DATA_DIR2, { recursive: true });
-  await writeFile2(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
-}
-function buildAnalytics(store, startDate, endDate) {
-  const { menuItems, orders } = store;
-  const filteredOrders = orders.filter((o) => {
-    const orderDate = new Date(o.createdAt);
-    if (startDate && orderDate < new Date(startDate)) return false;
-    if (endDate && orderDate > /* @__PURE__ */ new Date(endDate + "T23:59:59")) return false;
-    return true;
-  });
-  const totalRevenue = filteredOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-  const totalOrders = filteredOrders.length;
-  const activeOrders = filteredOrders.filter((o) => ["Received", "Preparing", "Ready"].includes(o.status)).length;
-  const outOfStockItems = menuItems.filter((m) => !m.available).length;
-  const categoryMap = {};
-  for (const order of filteredOrders) {
-    for (const item of order.items) {
-      const menuItem = menuItems.find((m) => m.name === item.name);
-      const cat = menuItem?.category ?? "Other";
-      if (!categoryMap[cat]) categoryMap[cat] = { orders: 0, revenue: 0 };
-      categoryMap[cat].orders += item.quantity;
-      categoryMap[cat].revenue += item.price * item.quantity;
-    }
-  }
-  const categoryBreakdown = Object.entries(categoryMap).map(([category, stats]) => ({
-    category,
-    orders: stats.orders,
-    revenue: stats.revenue
-  }));
-  const dailyMap = {};
-  for (const order of filteredOrders) {
-    const d = new Date(order.createdAt);
-    if (isNaN(d.getTime())) continue;
-    const day = d.toISOString().split("T")[0];
-    if (!dailyMap[day]) dailyMap[day] = { revenue: 0, orders: 0 };
-    dailyMap[day].revenue += order.total || 0;
-    dailyMap[day].orders += 1;
-  }
-  const sortedDays = Object.keys(dailyMap).sort();
-  const rangeStart = sortedDays[0] || (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-  const rangeEnd = sortedDays[sortedDays.length - 1] || (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-  const dailyRevenue = [];
-  const current = new Date(rangeStart);
-  const endD = new Date(rangeEnd);
-  while (current <= endD) {
-    const key = current.toISOString().split("T")[0];
-    dailyRevenue.push({ date: key, revenue: dailyMap[key]?.revenue || 0, orders: dailyMap[key]?.orders || 0 });
-    current.setDate(current.getDate() + 1);
-  }
-  if (dailyRevenue.length === 0) {
-    const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-    dailyRevenue.push({ date: today, revenue: 0, orders: 0 });
-  }
-  const itemMap = {};
-  for (const order of filteredOrders) {
-    for (const item of order.items) {
-      if (!itemMap[item.name]) itemMap[item.name] = { name: item.name, quantity: 0, revenue: 0 };
-      itemMap[item.name].quantity += item.quantity;
-      itemMap[item.name].revenue += item.price * item.quantity;
-    }
-  }
-  const topItems = Object.values(itemMap).sort((a, b) => b.quantity - a.quantity).slice(0, 10);
-  return { totalRevenue, totalOrders, activeOrders, outOfStockItems, categoryBreakdown, dailyRevenue, topItems };
-}
 var ADMIN_USERNAME = "THB_ADMIN";
 var ADMIN_PASSWORD = "TBH_PASSWORD_123";
 var JWT_SECRET2 = process.env.JWT_SECRET || "thb-jwt-secret-2026-production-key-xK9mPz";
@@ -29970,19 +29799,91 @@ function adminAuth(req, res, next) {
   next();
 }
 router3.get("/admin/analytics", async (req, res) => {
-  const { startDate, endDate } = req.query;
-  const store = await loadStore();
-  const analytics = buildAnalytics(store, startDate, endDate);
-  res.json(GetAdminAnalyticsResponse.parse(analytics));
+  try {
+    const { startDate, endDate } = req.query;
+    let dateFilter = "";
+    const params = [];
+    if (startDate) {
+      params.push(startDate);
+      dateFilter += ` AND created_at >= $${params.length}::timestamptz`;
+    }
+    if (endDate) {
+      params.push(endDate + "T23:59:59");
+      dateFilter += ` AND created_at <= $${params.length}::timestamptz`;
+    }
+    const { rows: orders } = await db_default.query(`SELECT * FROM orders WHERE true ${dateFilter}`, params);
+    const { rows: menuItems } = await db_default.query("SELECT * FROM menu_items");
+    const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+    const totalOrders = orders.length;
+    const activeOrders = orders.filter((o) => ["Received", "Preparing", "Ready"].includes(o.status)).length;
+    const outOfStockItems = menuItems.filter((m) => !m.available).length;
+    const categoryMap = {};
+    for (const order of orders) {
+      const items = typeof order.items === "string" ? JSON.parse(order.items) : order.items;
+      for (const item of items) {
+        const menuItem = menuItems.find((m) => m.name === item.name);
+        const cat = menuItem?.category ?? "Other";
+        if (!categoryMap[cat]) categoryMap[cat] = { orders: 0, revenue: 0 };
+        categoryMap[cat].orders += item.quantity;
+        categoryMap[cat].revenue += item.price * item.quantity;
+      }
+    }
+    const categoryBreakdown = Object.entries(categoryMap).map(([category, stats]) => ({
+      category,
+      orders: stats.orders,
+      revenue: stats.revenue
+    }));
+    const dailyMap = {};
+    for (const order of orders) {
+      const d = new Date(order.created_at);
+      if (isNaN(d.getTime())) continue;
+      const day = d.toISOString().split("T")[0];
+      if (!dailyMap[day]) dailyMap[day] = { revenue: 0, orders: 0 };
+      dailyMap[day].revenue += Number(order.total) || 0;
+      dailyMap[day].orders += 1;
+    }
+    const sortedDays = Object.keys(dailyMap).sort();
+    const rangeStart = sortedDays[0] || (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const rangeEnd = sortedDays[sortedDays.length - 1] || (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const dailyRevenue = [];
+    const current = new Date(rangeStart);
+    const endD = new Date(rangeEnd);
+    while (current <= endD) {
+      const key = current.toISOString().split("T")[0];
+      dailyRevenue.push({ date: key, revenue: dailyMap[key]?.revenue || 0, orders: dailyMap[key]?.orders || 0 });
+      current.setDate(current.getDate() + 1);
+    }
+    if (dailyRevenue.length === 0) {
+      const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+      dailyRevenue.push({ date: today, revenue: 0, orders: 0 });
+    }
+    const itemMap = {};
+    for (const order of orders) {
+      const items = typeof order.items === "string" ? JSON.parse(order.items) : order.items;
+      for (const item of items) {
+        if (!itemMap[item.name]) itemMap[item.name] = { name: item.name, quantity: 0, revenue: 0 };
+        itemMap[item.name].quantity += item.quantity;
+        itemMap[item.name].revenue += item.price * item.quantity;
+      }
+    }
+    const topItems = Object.values(itemMap).sort((a, b) => b.quantity - a.quantity).slice(0, 10);
+    res.json(GetAdminAnalyticsResponse.parse({ totalRevenue, totalOrders, activeOrders, outOfStockItems, categoryBreakdown, dailyRevenue, topItems }));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router3.get("/admin/categories", async (_req, res) => {
-  const store = await loadStore();
-  const cats = store.categories ?? DEFAULT_CATEGORIES;
-  const result = cats.map((c) => ({
-    ...c,
-    itemCount: store.menuItems.filter((m) => m.category.toLowerCase() === c.name.toLowerCase() || m.category === c.name).length
-  }));
-  res.json(result);
+  try {
+    const { rows: cats } = await db_default.query("SELECT * FROM categories ORDER BY name");
+    const { rows: menuItems } = await db_default.query("SELECT category FROM menu_items");
+    const result = cats.map((c) => ({
+      ...c,
+      itemCount: menuItems.filter((m) => m.category.toLowerCase() === c.name.toLowerCase()).length
+    }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router3.post("/admin/categories", adminAuth, async (req, res) => {
   const parsed = CreateAdminCategoryBody.safeParse(req.body);
@@ -29990,24 +29891,20 @@ router3.post("/admin/categories", adminAuth, async (req, res) => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const store = await loadStore();
-  const cats = store.categories ?? DEFAULT_CATEGORIES;
-  const exists = cats.some(
-    (c) => c.slug === parsed.data.slug || c.name.toLowerCase() === parsed.data.name.toLowerCase()
-  );
-  if (exists) {
-    res.status(409).json({ error: "A category with this name or slug already exists" });
-    return;
+  try {
+    const { rows: existing } = await db_default.query("SELECT id FROM categories WHERE slug = $1 OR LOWER(name) = LOWER($2)", [parsed.data.slug, parsed.data.name]);
+    if (existing.length > 0) {
+      res.status(409).json({ error: "A category with this name or slug already exists" });
+      return;
+    }
+    const { rows } = await db_default.query(
+      "INSERT INTO categories (id, name, slug, emoji) VALUES ($1,$2,$3,$4) RETURNING *",
+      [`cat-${Date.now()}`, parsed.data.name, parsed.data.slug, parsed.data.emoji || null]
+    );
+    res.status(201).json({ ...rows[0], itemCount: 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  const newCat = {
-    id: `cat-${Date.now()}`,
-    name: parsed.data.name,
-    slug: parsed.data.slug,
-    emoji: parsed.data.emoji ?? void 0
-  };
-  store.categories = [...cats, newCat];
-  await saveStore(store);
-  res.status(201).json({ ...newCat, itemCount: 0 });
 });
 router3.delete("/admin/categories/:id", adminAuth, async (req, res) => {
   const rawId = Array.isArray(req.params["id"]) ? req.params["id"][0] : req.params["id"];
@@ -30016,25 +29913,30 @@ router3.delete("/admin/categories/:id", adminAuth, async (req, res) => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const store = await loadStore();
-  const cats = store.categories ?? DEFAULT_CATEGORIES;
-  const cat = cats.find((c) => c.id === params.data.id);
-  if (!cat) {
-    res.status(404).json({ error: "Category not found" });
-    return;
+  try {
+    const { rows: cat } = await db_default.query("SELECT * FROM categories WHERE id = $1", [params.data.id]);
+    if (cat.length === 0) {
+      res.status(404).json({ error: "Category not found" });
+      return;
+    }
+    const { rows: items } = await db_default.query("SELECT COUNT(*)::int as count FROM menu_items WHERE LOWER(category) = LOWER($1)", [cat[0].name]);
+    if (items[0].count > 0) {
+      res.status(409).json({ error: `Cannot delete \u2014 ${items[0].count} menu item(s) use this category` });
+      return;
+    }
+    await db_default.query("DELETE FROM categories WHERE id = $1", [params.data.id]);
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  const itemCount = store.menuItems.filter((m) => m.category.toLowerCase() === cat.name.toLowerCase()).length;
-  if (itemCount > 0) {
-    res.status(409).json({ error: `Cannot delete \u2014 ${itemCount} menu item(s) use this category` });
-    return;
-  }
-  store.categories = cats.filter((c) => c.id !== params.data.id);
-  await saveStore(store);
-  res.sendStatus(204);
 });
 router3.get("/admin/menu", async (_req, res) => {
-  const store = await loadStore();
-  res.json(store.menuItems.map((m) => ListAdminMenuItemsResponseItem.parse(m)));
+  try {
+    const { rows } = await db_default.query("SELECT * FROM menu_items ORDER BY id");
+    res.json(rows.map((r) => ListAdminMenuItemsResponseItem.parse(r)));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router3.post("/admin/menu", adminAuth, async (req, res) => {
   const parsed = CreateAdminMenuItemBody.safeParse(req.body);
@@ -30042,28 +29944,32 @@ router3.post("/admin/menu", adminAuth, async (req, res) => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const store = await loadStore();
-  const newItem = {
-    id: `m${Date.now()}`,
-    name: parsed.data.name,
-    description: parsed.data.description,
-    price: parsed.data.price,
-    category: parsed.data.category,
-    available: true,
-    spicy: parsed.data.spicy ?? false,
-    popular: parsed.data.popular ?? false,
-    calories: parsed.data.calories ?? null,
-    imageUrl: parsed.data.imageUrl ?? null,
-    callout: parsed.data.callout ?? null,
-    offerPercentage: parsed.data.offerPercentage ?? null,
-    offerLabel: parsed.data.offerLabel ?? null,
-    offerActive: parsed.data.offerActive ?? false,
-    offerStartDate: parsed.data.offerStartDate ?? null,
-    offerEndDate: parsed.data.offerEndDate ?? null
-  };
-  store.menuItems.push(newItem);
-  await saveStore(store);
-  res.status(201).json(ListAdminMenuItemsResponseItem.parse(newItem));
+  try {
+    const { rows } = await db_default.query(
+      `INSERT INTO menu_items (id, name, description, price, category, available, spicy, popular, calories, image_url, callout, offer_percentage, offer_label, offer_active, offer_start_date, offer_end_date)
+       VALUES ($1,$2,$3,$4,$5,true,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
+      [
+        `m${Date.now()}`,
+        parsed.data.name,
+        parsed.data.description,
+        parsed.data.price,
+        parsed.data.category,
+        parsed.data.spicy ?? false,
+        parsed.data.popular ?? false,
+        parsed.data.calories ?? null,
+        parsed.data.imageUrl ?? null,
+        parsed.data.callout ?? null,
+        parsed.data.offerPercentage ?? null,
+        parsed.data.offerLabel ?? null,
+        parsed.data.offerActive ?? false,
+        parsed.data.offerStartDate ?? null,
+        parsed.data.offerEndDate ?? null
+      ]
+    );
+    res.status(201).json(ListAdminMenuItemsResponseItem.parse(rows[0]));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router3.patch("/admin/menu/:id", adminAuth, async (req, res) => {
   const rawId = Array.isArray(req.params["id"]) ? req.params["id"][0] : req.params["id"];
@@ -30077,15 +29983,31 @@ router3.patch("/admin/menu/:id", adminAuth, async (req, res) => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const store = await loadStore();
-  const idx = store.menuItems.findIndex((m) => m.id === params.data.id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Menu item not found" });
-    return;
+  try {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    for (const [key, val] of Object.entries(parsed.data)) {
+      if (val === void 0) continue;
+      const dbKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+      fields.push(`${dbKey} = $${idx}`);
+      values.push(typeof val === "object" ? JSON.stringify(val) : val);
+      idx++;
+    }
+    if (fields.length === 0) {
+      res.status(400).json({ error: "No fields to update" });
+      return;
+    }
+    values.push(params.data.id);
+    const { rows } = await db_default.query(`UPDATE menu_items SET ${fields.join(", ")} WHERE id = $${idx} RETURNING *`, values);
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Menu item not found" });
+      return;
+    }
+    res.json(UpdateAdminMenuItemResponse.parse(rows[0]));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  store.menuItems[idx] = { ...store.menuItems[idx], ...parsed.data };
-  await saveStore(store);
-  res.json(UpdateAdminMenuItemResponse.parse(store.menuItems[idx]));
 });
 router3.delete("/admin/menu/:id", adminAuth, async (req, res) => {
   const rawId = Array.isArray(req.params["id"]) ? req.params["id"][0] : req.params["id"];
@@ -30094,22 +30016,24 @@ router3.delete("/admin/menu/:id", adminAuth, async (req, res) => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const store = await loadStore();
-  const idx = store.menuItems.findIndex((m) => m.id === params.data.id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Menu item not found" });
-    return;
+  try {
+    const { rowCount } = await db_default.query("DELETE FROM menu_items WHERE id = $1", [params.data.id]);
+    if (rowCount === 0) {
+      res.status(404).json({ error: "Menu item not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  store.menuItems.splice(idx, 1);
-  await saveStore(store);
-  res.sendStatus(204);
 });
 router3.get("/admin/orders", async (_req, res) => {
-  const store = await loadStore();
-  const sorted = [...store.orders].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-  res.json(sorted.map((o) => ListAdminOrdersResponseItem.parse({ ...o, branch: o.branch ?? "Main" })));
+  try {
+    const { rows } = await db_default.query("SELECT * FROM orders ORDER BY created_at DESC");
+    res.json(rows.map((o) => ListAdminOrdersResponseItem.parse({ ...o, branch: o.branch ?? "Main" })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router3.patch("/admin/orders/:id/status", adminAuth, async (req, res) => {
   const rawId = Array.isArray(req.params["id"]) ? req.params["id"][0] : req.params["id"];
@@ -30123,19 +30047,27 @@ router3.patch("/admin/orders/:id/status", adminAuth, async (req, res) => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const store = await loadStore();
-  const idx = store.orders.findIndex((o) => o.id === params.data.id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Order not found" });
-    return;
+  try {
+    const { rows } = await db_default.query(
+      "UPDATE orders SET status = $1 WHERE id = $2 RETURNING *",
+      [parsed.data.status, params.data.id]
+    );
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+    res.json(UpdateAdminOrderStatusResponse.parse({ ...rows[0], branch: rows[0].branch ?? "Main" }));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  store.orders[idx] = { ...store.orders[idx], status: parsed.data.status };
-  await saveStore(store);
-  res.json(UpdateAdminOrderStatusResponse.parse({ ...store.orders[idx], branch: store.orders[idx].branch ?? "Main" }));
 });
 router3.get("/admin/staff", adminAuth, async (_req, res) => {
-  const store = await loadStore();
-  res.json(store.staff || []);
+  try {
+    const { rows } = await db_default.query("SELECT * FROM staff ORDER BY created_at DESC");
+    res.json(rows);
+  } catch (err) {
+    res.json([]);
+  }
 });
 router3.post("/admin/staff", adminAuth, async (req, res) => {
   const { username, name, password, role } = req.body;
@@ -30143,51 +30075,67 @@ router3.post("/admin/staff", adminAuth, async (req, res) => {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const store = await loadStore();
-  if (!store.staff) store.staff = [];
-  const member = {
-    id: `STF${Date.now().toString().slice(-6)}`,
-    username,
-    name,
-    role,
-    active: true,
-    createdAt: (/* @__PURE__ */ new Date()).toISOString()
-  };
-  store.staff.push(member);
-  await saveStore(store);
-  res.status(201).json(member);
+  try {
+    const { rows } = await db_default.query(
+      "INSERT INTO staff (id, username, name, role, active) VALUES ($1,$2,$3,$4,true) RETURNING *",
+      [`STF${Date.now().toString().slice(-6)}`, username, name, role]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router3.patch("/admin/staff/:id", adminAuth, async (req, res) => {
   const id = req.params["id"];
-  const store = await loadStore();
-  const idx = (store.staff || []).findIndex((s) => s.id === id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Staff not found" });
-    return;
+  try {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    for (const [key, val] of Object.entries(req.body)) {
+      fields.push(`${key} = $${idx}`);
+      values.push(val);
+      idx++;
+    }
+    if (fields.length === 0) {
+      res.status(400).json({ error: "Nothing to update" });
+      return;
+    }
+    values.push(id);
+    const { rows } = await db_default.query(`UPDATE staff SET ${fields.join(", ")} WHERE id = $${idx} RETURNING *`, values);
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Staff not found" });
+      return;
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  store.staff[idx] = { ...store.staff[idx], ...req.body };
-  await saveStore(store);
-  res.json(store.staff[idx]);
 });
 router3.delete("/admin/staff/:id", adminAuth, async (req, res) => {
   const id = req.params["id"];
-  const store = await loadStore();
-  store.staff = (store.staff || []).filter((s) => s.id !== id);
-  await saveStore(store);
-  res.sendStatus(204);
+  try {
+    await db_default.query("DELETE FROM staff WHERE id = $1", [id]);
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router3.patch("/admin/menu/:id/stock", adminAuth, async (req, res) => {
   const id = req.params["id"];
   const { stock } = req.body;
-  const store = await loadStore();
-  const idx = store.menuItems.findIndex((m) => m.id === id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Item not found" });
-    return;
+  try {
+    const { rows } = await db_default.query(
+      "UPDATE menu_items SET stock = $1 WHERE id = $2 RETURNING *",
+      [Number(stock), id]
+    );
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Item not found" });
+      return;
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  store.menuItems[idx] = { ...store.menuItems[idx], stock: Number(stock) };
-  await saveStore(store);
-  res.json(store.menuItems[idx]);
 });
 var admin_default = router3;
 
@@ -30296,7 +30244,7 @@ var ObjectStorageService = class {
     const pathsStr = process.env.PUBLIC_OBJECT_SEARCH_PATHS || "";
     const paths = Array.from(
       new Set(
-        pathsStr.split(",").map((path2) => path2.trim()).filter((path2) => path2.length > 0)
+        pathsStr.split(",").map((path) => path.trim()).filter((path) => path.length > 0)
       )
     );
     if (paths.length === 0) {
@@ -30420,11 +30368,11 @@ var ObjectStorageService = class {
     });
   }
 };
-function parseObjectPath(path2) {
-  if (!path2.startsWith("/")) {
-    path2 = `/${path2}`;
+function parseObjectPath(path) {
+  if (!path.startsWith("/")) {
+    path = `/${path}`;
   }
-  const pathParts = path2.split("/");
+  const pathParts = path.split("/");
   if (pathParts.length < 3) {
     throw new Error("Invalid path: must contain at least a bucket name");
   }
@@ -30469,14 +30417,14 @@ async function signObjectURL({
 
 // src/lib/localObjectStorage.ts
 import { randomUUID as randomUUID3 } from "crypto";
-import { access, mkdir as mkdir3, readFile as readFile3, writeFile as writeFile3 } from "fs/promises";
-import { join as join3, extname } from "path";
-var UPLOAD_DIR = join3(process.cwd(), "data", "uploads");
+import { access, mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2 } from "fs/promises";
+import { join as join2, extname } from "path";
+var UPLOAD_DIR = join2(process.cwd(), "data", "uploads");
 function useLocalObjectStorage() {
   return process.env["USE_LOCAL_STORAGE"] === "true" || process.env["USE_LOCAL_STORAGE"] === "1" || !process.env["PRIVATE_OBJECT_DIR"];
 }
 async function ensureUploadDir() {
-  await mkdir3(UPLOAD_DIR, { recursive: true });
+  await mkdir2(UPLOAD_DIR, { recursive: true });
 }
 function createLocalUploadTarget() {
   const objectId = randomUUID3();
@@ -30496,8 +30444,8 @@ function extensionForContentType(contentType) {
 async function saveLocalUpload(objectId, data, contentType) {
   await ensureUploadDir();
   const ext = extensionForContentType(contentType);
-  const filePath = join3(UPLOAD_DIR, `${objectId}${ext}`);
-  await writeFile3(filePath, data);
+  const filePath = join2(UPLOAD_DIR, `${objectId}${ext}`);
+  await writeFile2(filePath, data);
   return filePath;
 }
 async function readLocalObject(objectPath) {
@@ -30509,10 +30457,10 @@ async function readLocalObject(objectPath) {
   await ensureUploadDir();
   const extensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bin"];
   for (const ext2 of extensions) {
-    const filePath2 = join3(UPLOAD_DIR, `${objectId}${ext2}`);
+    const filePath2 = join2(UPLOAD_DIR, `${objectId}${ext2}`);
     try {
       await access(filePath2);
-      const data2 = await readFile3(filePath2);
+      const data2 = await readFile2(filePath2);
       const contentType2 = ext2 === ".png" ? "image/png" : ext2 === ".webp" ? "image/webp" : ext2 === ".gif" ? "image/gif" : ext2 === ".bin" ? "application/octet-stream" : "image/jpeg";
       return { data: data2, contentType: contentType2 };
     } catch {
@@ -30522,8 +30470,8 @@ async function readLocalObject(objectPath) {
   const files = await readdir(UPLOAD_DIR);
   const match = files.find((f) => f.startsWith(objectId));
   if (!match) return null;
-  const filePath = join3(UPLOAD_DIR, match);
-  const data = await readFile3(filePath);
+  const filePath = join2(UPLOAD_DIR, match);
+  const data = await readFile2(filePath);
   const ext = extname(match).toLowerCase();
   const contentType = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : ext === ".gif" ? "image/gif" : "image/jpeg";
   return { data, contentType };
@@ -30654,23 +30602,19 @@ var storage_default = router4;
 
 // src/routes/mobile.ts
 var import_express5 = __toESM(require_express2(), 1);
-import { readFile as readFile4, writeFile as writeFile4, mkdir as mkdir4 } from "fs/promises";
-import { join as join4 } from "path";
 var router5 = (0, import_express5.Router)();
-var DATA_DIR3 = join4(process.cwd(), "data");
 router5.get("/mobile/menu", async (_req, res) => {
   try {
-    const store = JSON.parse(await readFile4(join4(DATA_DIR3, "store.json"), "utf-8"));
-    const items = (store.menuItems || []).filter((m) => m.available !== false);
-    res.json(items);
+    const { rows } = await db_default.query("SELECT * FROM menu_items WHERE available = true ORDER BY id");
+    res.json(rows);
   } catch {
     res.json([]);
   }
 });
 router5.get("/mobile/categories", async (_req, res) => {
   try {
-    const store = JSON.parse(await readFile4(join4(DATA_DIR3, "store.json"), "utf-8"));
-    res.json(store.categories || []);
+    const { rows } = await db_default.query("SELECT * FROM categories ORDER BY name");
+    res.json(rows);
   } catch {
     res.json([]);
   }
@@ -30681,37 +30625,30 @@ router5.post("/mobile/orders", async (req, res) => {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const storePath = join4(DATA_DIR3, "store.json");
-  let store = { menuItems: [], orders: [], categories: [] };
-  try {
-    store = JSON.parse(await readFile4(storePath, "utf-8"));
-  } catch {
-  }
   const orderId = `THB${Date.now().toString().slice(-6)}`;
-  const order = {
-    id: orderId,
-    customerName,
-    customerPhone,
-    orderType: orderType || "takeaway",
-    items: items.map((i) => ({
-      name: i.name,
-      quantity: i.quantity,
-      price: i.price
-    })),
-    subtotal: Number(subtotal) || 0,
-    tax: Number(tax) || 0,
-    deliveryFee: Number(deliveryFee) || 0,
-    total: Number(total) || 0,
-    status: "Received",
-    createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-    deliveryAddress: deliveryAddress || null,
-    specialInstructions: specialInstructions || null,
-    paymentMethod: paymentMethod || "cod"
-  };
-  store.orders = [order, ...store.orders || []];
-  await mkdir4(DATA_DIR3, { recursive: true });
-  await writeFile4(storePath, JSON.stringify(store, null, 2), "utf-8");
-  res.status(201).json(order);
+  try {
+    const { rows } = await db_default.query(
+      `INSERT INTO orders (id, customer_name, customer_phone, order_type, items, subtotal, tax, delivery_fee, total, status, delivery_address, special_instructions, payment_method)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'Received',$10,$11,$12) RETURNING *`,
+      [
+        orderId,
+        customerName,
+        customerPhone,
+        orderType || "takeaway",
+        JSON.stringify(items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price }))),
+        subtotal || 0,
+        tax || 0,
+        deliveryFee || 0,
+        total || 0,
+        deliveryAddress || null,
+        specialInstructions || null,
+        paymentMethod || "cod"
+      ]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Failed to create order" });
+  }
 });
 router5.get("/mobile/orders", async (req, res) => {
   const phone = req.query["phone"];
@@ -30720,9 +30657,11 @@ router5.get("/mobile/orders", async (req, res) => {
     return;
   }
   try {
-    const store = JSON.parse(await readFile4(join4(DATA_DIR3, "store.json"), "utf-8"));
-    const userOrders = (store.orders || []).filter((o) => o.customerPhone === phone).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    res.json(userOrders);
+    const { rows } = await db_default.query(
+      "SELECT * FROM orders WHERE customer_phone = $1 ORDER BY created_at DESC",
+      [phone]
+    );
+    res.json(rows);
   } catch {
     res.json([]);
   }
@@ -30733,26 +30672,16 @@ router5.post("/mobile/reservations", async (req, res) => {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const storePath = join4(DATA_DIR3, "store.json");
-  let store = { menuItems: [], orders: [], categories: [], reservations: [] };
   try {
-    store = JSON.parse(await readFile4(storePath, "utf-8"));
-  } catch {
+    const { rows } = await db_default.query(
+      `INSERT INTO reservations (id, customer_name, customer_phone, date, time, party_size, status)
+       VALUES ($1,$2,$3,$4,$5,$6,'confirmed') RETURNING *`,
+      [`RES${Date.now().toString().slice(-6)}`, customerName, customerPhone, date, time, partySize || 2]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Failed to create reservation" });
   }
-  const reservation = {
-    id: `RES${Date.now().toString().slice(-6)}`,
-    customerName,
-    customerPhone,
-    date,
-    time,
-    partySize: Number(partySize) || 2,
-    status: "confirmed",
-    createdAt: (/* @__PURE__ */ new Date()).toISOString()
-  };
-  store.reservations = [reservation, ...store.reservations || []];
-  await mkdir4(DATA_DIR3, { recursive: true });
-  await writeFile4(storePath, JSON.stringify(store, null, 2), "utf-8");
-  res.status(201).json(reservation);
 });
 router5.get("/mobile/reservations", async (req, res) => {
   const phone = req.query["phone"];
@@ -30761,9 +30690,11 @@ router5.get("/mobile/reservations", async (req, res) => {
     return;
   }
   try {
-    const store = JSON.parse(await readFile4(join4(DATA_DIR3, "store.json"), "utf-8"));
-    const userReservations = (store.reservations || []).filter((r) => r.customerPhone === phone).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    res.json(userReservations);
+    const { rows } = await db_default.query(
+      "SELECT * FROM reservations WHERE customer_phone = $1 ORDER BY created_at DESC",
+      [phone]
+    );
+    res.json(rows);
   } catch {
     res.json([]);
   }
@@ -30772,75 +30703,22 @@ var mobile_default = router5;
 
 // src/routes/banners.ts
 var import_express6 = __toESM(require_express2(), 1);
-import { readFile as readFile5, writeFile as writeFile5, mkdir as mkdir5 } from "fs/promises";
-import { join as join5 } from "path";
 var router6 = (0, import_express6.Router)();
-var DATA_DIR4 = join5(process.cwd(), "data");
-var BANNERS_FILE = join5(DATA_DIR4, "banners.json");
-var DEFAULT_BANNERS = [
-  {
-    id: "s1",
-    title: "Big Deals, Bigger Savings",
-    subtitle: "Save up to 40% on family meals",
-    tag: " LIMITED TIME",
-    tagColor: "#FFD54F",
-    gradStart: "#C8102E",
-    gradEnd: "#8B0000",
-    ctaLabel: "Order Now",
-    ctaCat: "deals",
-    imageUrl: "/images/hero-banner.png",
-    active: true,
-    sortOrder: 0
-  },
-  {
-    id: "s2",
-    title: "Istanbul Zinger Burger",
-    subtitle: "Crispy, spicy, irresistible",
-    tag: " BESTSELLER",
-    tagColor: "#FF6B35",
-    gradStart: "#FF6B35",
-    gradEnd: "#D32F2F",
-    ctaLabel: "View Menu",
-    ctaCat: "burgers",
-    imageUrl: "/images/burger.png",
-    active: true,
-    sortOrder: 1
-  },
-  {
-    id: "s3",
-    title: "Crispy Chicken",
-    subtitle: "Golden fried perfection",
-    tag: " POPULAR",
-    tagColor: "#4CAF50",
-    gradStart: "#2E7D32",
-    gradEnd: "#1B5E20",
-    ctaLabel: "Order Now",
-    ctaCat: "chicken",
-    imageUrl: "/images/chicken.png",
-    active: true,
-    sortOrder: 2
-  }
-];
-async function loadBanners() {
-  try {
-    const raw = await readFile5(BANNERS_FILE, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    await saveBanners(DEFAULT_BANNERS);
-    return DEFAULT_BANNERS;
-  }
-}
-async function saveBanners(banners) {
-  await mkdir5(DATA_DIR4, { recursive: true });
-  await writeFile5(BANNERS_FILE, JSON.stringify(banners, null, 2), "utf-8");
-}
 router6.get("/mobile/banners", async (_req, res) => {
-  const banners = await loadBanners();
-  res.json(banners.filter((b) => b.active).sort((a, b) => a.sortOrder - b.sortOrder));
+  try {
+    const { rows } = await db_default.query("SELECT * FROM banners WHERE active = true ORDER BY sort_order");
+    res.json(rows);
+  } catch {
+    res.json([]);
+  }
 });
 router6.get("/admin/banners", async (_req, res) => {
-  const banners = await loadBanners();
-  res.json(banners.sort((a, b) => a.sortOrder - b.sortOrder));
+  try {
+    const { rows } = await db_default.query("SELECT * FROM banners ORDER BY sort_order");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router6.post("/admin/banners", adminAuth, async (req, res) => {
   const { title, subtitle, tag, tagColor, gradStart, gradEnd, ctaLabel, ctaCat, imageUrl, active, sortOrder } = req.body;
@@ -30848,109 +30726,130 @@ router6.post("/admin/banners", adminAuth, async (req, res) => {
     res.status(400).json({ error: "title is required" });
     return;
   }
-  const banners = await loadBanners();
-  const newBanner = {
-    id: `b${Date.now()}`,
-    title: title || "",
-    subtitle: subtitle || "",
-    tag: tag || "",
-    tagColor: tagColor || "#FFD54F",
-    gradStart: gradStart || "#C8102E",
-    gradEnd: gradEnd || "#8B0000",
-    ctaLabel: ctaLabel || "Order Now",
-    ctaCat: ctaCat || "deals",
-    imageUrl: imageUrl || "",
-    active: active !== false,
-    sortOrder: sortOrder ?? banners.length
-  };
-  banners.push(newBanner);
-  await saveBanners(banners);
-  res.status(201).json(newBanner);
+  try {
+    const { rows } = await db_default.query(
+      `INSERT INTO banners (id, title, subtitle, tag, tag_color, grad_start, grad_end, cta_label, cta_cat, image_url, active, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+      [
+        `b${Date.now()}`,
+        title || "",
+        subtitle || "",
+        tag || "",
+        tagColor || "#FFD54F",
+        gradStart || "#C8102E",
+        gradEnd || "#8B0000",
+        ctaLabel || "Order Now",
+        ctaCat || "deals",
+        imageUrl || "",
+        active !== false,
+        sortOrder ?? 0
+      ]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router6.patch("/admin/banners/:id", adminAuth, async (req, res) => {
   const rawId = Array.isArray(req.params["id"]) ? req.params["id"][0] : req.params["id"];
-  const banners = await loadBanners();
-  const idx = banners.findIndex((b) => b.id === rawId);
-  if (idx === -1) {
-    res.status(404).json({ error: "Banner not found" });
-    return;
+  try {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    const mapping = {
+      title: "title",
+      subtitle: "subtitle",
+      tag: "tag",
+      tagColor: "tag_color",
+      gradStart: "grad_start",
+      gradEnd: "grad_end",
+      ctaLabel: "cta_label",
+      ctaCat: "cta_cat",
+      imageUrl: "image_url",
+      active: "active",
+      sortOrder: "sort_order"
+    };
+    for (const [key, val] of Object.entries(req.body)) {
+      const dbKey = mapping[key] || key;
+      fields.push(`${dbKey} = $${idx}`);
+      values.push(val);
+      idx++;
+    }
+    if (fields.length === 0) {
+      res.status(400).json({ error: "Nothing to update" });
+      return;
+    }
+    values.push(rawId);
+    const { rows } = await db_default.query(`UPDATE banners SET ${fields.join(", ")} WHERE id = $${idx} RETURNING *`, values);
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Banner not found" });
+      return;
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  banners[idx] = { ...banners[idx], ...req.body, id: rawId };
-  await saveBanners(banners);
-  res.json(banners[idx]);
 });
 router6.delete("/admin/banners/:id", adminAuth, async (req, res) => {
   const rawId = Array.isArray(req.params["id"]) ? req.params["id"][0] : req.params["id"];
-  const banners = await loadBanners();
-  const filtered = banners.filter((b) => b.id !== rawId);
-  if (filtered.length === banners.length) {
-    res.status(404).json({ error: "Banner not found" });
-    return;
+  try {
+    const { rowCount } = await db_default.query("DELETE FROM banners WHERE id = $1", [rawId]);
+    if (rowCount === 0) {
+      res.status(404).json({ error: "Banner not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  await saveBanners(filtered);
-  res.sendStatus(204);
 });
 var banners_default = router6;
 
 // src/routes/websiteContent.ts
 var import_express7 = __toESM(require_express2(), 1);
-import { readFile as readFile6, writeFile as writeFile6, mkdir as mkdir6 } from "fs/promises";
-import { join as join6 } from "path";
 var router7 = (0, import_express7.Router)();
-var DATA_DIR5 = join6(process.cwd(), "data");
-var CONTENT_FILE = join6(DATA_DIR5, "website-content.json");
-var DEFAULT_CONTENT = [
-  { key: "hero_title", label: "Hero Title", value: "Fresh, Halal Chicken", section: "hero" },
-  { key: "hero_subtitle", label: "Hero Subtitle", value: "Delivered to You", section: "hero" },
-  { key: "hero_cta", label: "Hero CTA Button", value: "Order Now", section: "hero" },
-  { key: "about_title", label: "About Title", value: "The Hunger Bite Istanbul", section: "about" },
-  { key: "about_description", label: "About Description", value: "We serve the freshest, halal-certified chicken dishes made with premium ingredients and our signature spice blends. Inspired by Turkish culinary traditions with a Pakistani heart, every bite is a commitment to quality and taste.", section: "about" },
-  { key: "about_mission", label: "Mission Statement", value: "To bring authentic, high-quality halal food to every table while maintaining our commitment to exceptional taste \u2014 blending Turkish culinary art with Pakistani hospitality.", section: "about" },
-  { key: "footer_copyright", label: "Footer Copyright", value: "2026 The Hunger Bite Istanbul. All rights reserved.", section: "footer" },
-  { key: "footer_phone", label: "Footer Phone", value: "03121129700", section: "footer" },
-  { key: "footer_email", label: "Footer Email", value: "info@thehungerbite.com", section: "footer" },
-  { key: "footer_address", label: "Footer Address", value: "Sector 4, Naval Colony, Karachi", section: "footer" },
-  { key: "contact_phone", label: "Contact Phone", value: "03121129700", section: "contact" },
-  { key: "contact_email", label: "Contact Email", value: "info@thehungerbite.com", section: "contact" },
-  { key: "contact_hours", label: "Working Hours", value: "10:00 AM - 12:00 AM", section: "contact" },
-  { key: "cta_title", label: "CTA Title", value: "Ready to Order?", section: "cta" },
-  { key: "cta_subtitle", label: "CTA Subtitle", value: "Fresh, halal-certified food delivered to your doorstep", section: "cta" },
-  { key: "cta_button", label: "CTA Button Text", value: "Explore Menu", section: "cta" },
-  { key: "story_hero_tagline", label: "Story Hero Tagline", value: "From Pakistan With Turkish Inspiration", section: "story" },
-  { key: "story_ceo_tagline", label: "Story CEO Tagline", value: "Made with heart by the THB Culinary Team", section: "story" }
-];
-async function loadContent() {
-  try {
-    const raw = await readFile6(CONTENT_FILE, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    await saveContent(DEFAULT_CONTENT);
-    return DEFAULT_CONTENT;
-  }
-}
-async function saveContent(blocks) {
-  await mkdir6(DATA_DIR5, { recursive: true });
-  await writeFile6(CONTENT_FILE, JSON.stringify(blocks, null, 2), "utf-8");
-}
 router7.get("/mobile/website-content", async (_req, res) => {
-  const blocks = await loadContent();
-  res.json(blocks);
+  try {
+    const { rows } = await db_default.query("SELECT * FROM website_content ORDER BY section, key");
+    res.json(rows);
+  } catch {
+    res.json([]);
+  }
 });
 router7.get("/admin/website-content", async (_req, res) => {
-  const blocks = await loadContent();
-  res.json(blocks);
+  try {
+    const { rows } = await db_default.query("SELECT * FROM website_content ORDER BY section, key");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 router7.patch("/admin/website-content/:key", adminAuth, async (req, res) => {
   const rawKey = Array.isArray(req.params["key"]) ? req.params["key"][0] : req.params["key"];
-  const blocks = await loadContent();
-  const idx = blocks.findIndex((b) => b.key === rawKey);
-  if (idx === -1) {
-    res.status(404).json({ error: "Content block not found" });
-    return;
+  try {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    for (const [key, val] of Object.entries(req.body)) {
+      if (key === "key") continue;
+      fields.push(`${key} = $${idx}`);
+      values.push(val);
+      idx++;
+    }
+    if (fields.length === 0) {
+      res.status(400).json({ error: "Nothing to update" });
+      return;
+    }
+    values.push(rawKey);
+    const { rows } = await db_default.query(`UPDATE website_content SET ${fields.join(", ")} WHERE key = $${idx} RETURNING *`, values);
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Content block not found" });
+      return;
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  blocks[idx] = { ...blocks[idx], ...req.body, key: rawKey };
-  await saveContent(blocks);
-  res.json(blocks[idx]);
 });
 router7.post("/admin/website-content", adminAuth, async (req, res) => {
   const { key, label, value, section } = req.body;
@@ -30958,37 +30857,39 @@ router7.post("/admin/website-content", adminAuth, async (req, res) => {
     res.status(400).json({ error: "key and label are required" });
     return;
   }
-  const blocks = await loadContent();
-  const exists = blocks.some((b) => b.key === key);
-  if (exists) {
-    res.status(409).json({ error: "A content block with this key already exists" });
-    return;
+  try {
+    const { rows: existing } = await db_default.query("SELECT key FROM website_content WHERE key = $1", [key]);
+    if (existing.length > 0) {
+      res.status(409).json({ error: "A content block with this key already exists" });
+      return;
+    }
+    const { rows } = await db_default.query(
+      "INSERT INTO website_content (key, label, value, section) VALUES ($1,$2,$3,$4) RETURNING *",
+      [key, label, value || "", section || "general"]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  const newBlock = { key, label, value: value || "", section: section || "general" };
-  blocks.push(newBlock);
-  await saveContent(blocks);
-  res.status(201).json(newBlock);
 });
 router7.delete("/admin/website-content/:key", adminAuth, async (req, res) => {
   const rawKey = Array.isArray(req.params["key"]) ? req.params["key"][0] : req.params["key"];
-  const blocks = await loadContent();
-  const filtered = blocks.filter((b) => b.key !== rawKey);
-  if (filtered.length === blocks.length) {
-    res.status(404).json({ error: "Content block not found" });
-    return;
+  try {
+    const { rowCount } = await db_default.query("DELETE FROM website_content WHERE key = $1", [rawKey]);
+    if (rowCount === 0) {
+      res.status(404).json({ error: "Content block not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  await saveContent(filtered);
-  res.sendStatus(204);
 });
 var websiteContent_default = router7;
 
 // src/routes/settings.ts
 var import_express8 = __toESM(require_express2(), 1);
-import { readFile as readFile7, writeFile as writeFile7, mkdir as mkdir7 } from "fs/promises";
-import { join as join7 } from "path";
 var router8 = (0, import_express8.Router)();
-var DATA_DIR6 = join7(process.cwd(), "data");
-var SETTINGS_FILE = join7(DATA_DIR6, "settings.json");
 var DEFAULT_SETTINGS = {
   storeName: "The Hunger Bite Istanbul",
   storePhone: "03121129700",
@@ -31005,16 +30906,11 @@ var DEFAULT_SETTINGS = {
 };
 async function loadSettings() {
   try {
-    const raw = await readFile7(SETTINGS_FILE, "utf-8");
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+    const { rows } = await db_default.query("SELECT value FROM settings WHERE key = 'store'");
+    if (rows.length > 0) return rows[0].value;
   } catch {
-    await saveSettings(DEFAULT_SETTINGS);
-    return DEFAULT_SETTINGS;
   }
-}
-async function saveSettings(settings) {
-  await mkdir7(DATA_DIR6, { recursive: true });
-  await writeFile7(SETTINGS_FILE, JSON.stringify(settings, null, 2), "utf-8");
+  return DEFAULT_SETTINGS;
 }
 router8.get("/mobile/settings", async (_req, res) => {
   const settings = await loadSettings();
@@ -31025,19 +30921,23 @@ router8.get("/admin/settings", async (_req, res) => {
   res.json(settings);
 });
 router8.patch("/admin/settings", adminAuth, async (req, res) => {
-  const current = await loadSettings();
-  const updated = { ...current, ...req.body };
-  await saveSettings(updated);
-  res.json(updated);
+  try {
+    const current = await loadSettings();
+    const updated = { ...current, ...req.body };
+    await db_default.query(
+      "INSERT INTO settings (key, value) VALUES ('store', $1) ON CONFLICT (key) DO UPDATE SET value = $1",
+      [JSON.stringify(updated)]
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 var settings_default = router8;
 
 // src/routes/reviews.ts
 var import_express9 = __toESM(require_express2(), 1);
-import fs from "fs";
-import path from "path";
 var router9 = (0, import_express9.Router)();
-var DATA_FILE2 = path.join(process.cwd(), "data", "reviews.json");
 var BANNED_WORDS = [
   "fuck",
   "shit",
@@ -31066,118 +30966,94 @@ function containsBannedWords(text) {
   const lower = text.toLowerCase();
   return BANNED_WORDS.some((word) => lower.includes(word));
 }
-function readReviews() {
+router9.get("/mobile/reviews", async (_req, res) => {
   try {
-    if (!fs.existsSync(DATA_FILE2)) {
-      fs.writeFileSync(DATA_FILE2, "[]", "utf-8");
-      return [];
-    }
-    return JSON.parse(fs.readFileSync(DATA_FILE2, "utf-8"));
+    const { rows } = await db_default.query("SELECT * FROM reviews WHERE approved = true ORDER BY date DESC");
+    res.json(rows);
   } catch {
-    return [];
+    res.json([]);
   }
-}
-function writeReviews(reviews) {
-  fs.writeFileSync(DATA_FILE2, JSON.stringify(reviews, null, 2), "utf-8");
-}
-router9.get("/mobile/reviews", (_req, res) => {
-  const reviews = readReviews();
-  const approved = reviews.filter((r) => r.approved !== false);
-  approved.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  res.json(approved);
 });
-router9.get("/website/reviews", (_req, res) => {
-  const reviews = readReviews();
-  const approved = reviews.filter((r) => r.approved !== false);
-  approved.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  res.json(approved);
+router9.get("/website/reviews", async (_req, res) => {
+  try {
+    const { rows } = await db_default.query("SELECT * FROM reviews WHERE approved = true ORDER BY date DESC");
+    res.json(rows);
+  } catch {
+    res.json([]);
+  }
 });
 function handlePostReview(req, res) {
-  const { rating, text, imageUrl } = req.body;
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.replace("Bearer ", "");
-  let userName = "Anonymous";
-  let userId = "anonymous";
-  if (token) {
+  (async () => {
+    const { rating, text, imageUrl } = req.body;
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace("Bearer ", "");
+    let userName = "Anonymous";
+    let userId = "anonymous";
+    if (token) {
+      try {
+        const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+        userName = payload.name || payload.phone || "Anonymous";
+        userId = payload.userId || payload.sub || "anonymous";
+      } catch {
+      }
+    }
+    if (!rating || typeof rating !== "number" || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: "Rating must be between 1 and 5" });
+    }
+    if (!text || typeof text !== "string" || text.trim().length < 10) {
+      return res.status(400).json({ error: "Review must be at least 10 characters" });
+    }
+    if (text.trim().length > 500) {
+      return res.status(400).json({ error: "Review must be under 500 characters" });
+    }
+    if (containsBannedWords(text)) {
+      return res.status(400).json({ error: "Review contains inappropriate language" });
+    }
     try {
-      const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
-      userName = payload.name || payload.phone || "Anonymous";
-      userId = payload.userId || payload.sub || "anonymous";
-    } catch {
+      const { rows } = await db_default.query(
+        `INSERT INTO reviews (id, user_id, user_name, rating, text, image_url, approved)
+         VALUES ($1,$2,$3,$4,$5,$6,true) RETURNING *`,
+        [`rev_${Date.now()}`, userId, userName, Math.round(rating), text.trim(), imageUrl || null]
+      );
+      res.status(201).json(rows[0]);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-  }
-  if (!rating || typeof rating !== "number" || rating < 1 || rating > 5) {
-    return res.status(400).json({ error: "Rating must be between 1 and 5" });
-  }
-  if (!text || typeof text !== "string" || text.trim().length < 10) {
-    return res.status(400).json({ error: "Review must be at least 10 characters" });
-  }
-  if (text.trim().length > 500) {
-    return res.status(400).json({ error: "Review must be under 500 characters" });
-  }
-  if (containsBannedWords(text)) {
-    return res.status(400).json({ error: "Review contains inappropriate language" });
-  }
-  if (imageUrl && typeof imageUrl === "string") {
-    if (imageUrl.startsWith("data:")) {
-      const mimeMatch = imageUrl.match(/^data:(image\/\w+);/);
-      if (!mimeMatch) {
-        return res.status(400).json({ error: "Invalid image format" });
-      }
-      const mime = mimeMatch[1];
-      if (!["image/jpeg", "image/png", "image/webp"].includes(mime)) {
-        return res.status(400).json({ error: "Only JPG, PNG, and WebP images are allowed" });
-      }
-      const base64Data = imageUrl.split(",")[1] || "";
-      const sizeBytes = base64Data.length * 3 / 4;
-      if (sizeBytes > 5 * 1024 * 1024) {
-        return res.status(400).json({ error: "Image must be under 5MB" });
-      }
-    }
-  }
-  const review = {
-    id: `rev_${Date.now()}`,
-    userId,
-    userName,
-    rating: Math.round(rating),
-    text: text.trim(),
-    imageUrl: imageUrl || null,
-    date: (/* @__PURE__ */ new Date()).toISOString(),
-    approved: true
-  };
-  const reviews = readReviews();
-  reviews.push(review);
-  writeReviews(reviews);
-  res.status(201).json(review);
+  })();
 }
 router9.post("/mobile/reviews", handlePostReview);
 router9.post("/website/reviews", handlePostReview);
-router9.get("/admin/reviews", (_req, res) => {
-  const reviews = readReviews();
-  reviews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  res.json(reviews);
-});
-router9.delete("/admin/reviews/:id", adminAuth, (req, res) => {
-  const { id } = req.params;
-  const reviews = readReviews();
-  const filtered = reviews.filter((r) => r.id !== id);
-  if (filtered.length === reviews.length) {
-    return res.status(404).json({ error: "Review not found" });
+router9.get("/admin/reviews", async (_req, res) => {
+  try {
+    const { rows } = await db_default.query("SELECT * FROM reviews ORDER BY date DESC");
+    res.json(rows);
+  } catch {
+    res.json([]);
   }
-  writeReviews(filtered);
-  res.json({ ok: true });
 });
-router9.patch("/admin/reviews/:id", adminAuth, (req, res) => {
+router9.delete("/admin/reviews/:id", adminAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { rowCount } = await db_default.query("DELETE FROM reviews WHERE id = $1", [id]);
+    if (rowCount === 0) return res.status(404).json({ error: "Review not found" });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+router9.patch("/admin/reviews/:id", adminAuth, async (req, res) => {
   const { id } = req.params;
   const { approved } = req.body;
-  const reviews = readReviews();
-  const review = reviews.find((r) => r.id === id);
-  if (!review) {
-    return res.status(404).json({ error: "Review not found" });
+  try {
+    const { rows } = await db_default.query(
+      "UPDATE reviews SET approved = $1 WHERE id = $2 RETURNING *",
+      [approved, id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: "Review not found" });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  review.approved = approved;
-  writeReviews(reviews);
-  res.json(review);
 });
 var reviews_default = router9;
 
@@ -31254,19 +31130,348 @@ app.use(import_express11.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 var app_default = app;
 
+// src/init-db.ts
+async function initDatabase() {
+  const client = await db_default.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        slug TEXT NOT NULL UNIQUE,
+        emoji TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS menu_items (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        price NUMERIC NOT NULL DEFAULT 0,
+        category TEXT NOT NULL,
+        available BOOLEAN NOT NULL DEFAULT true,
+        spicy BOOLEAN NOT NULL DEFAULT false,
+        popular BOOLEAN NOT NULL DEFAULT false,
+        calories INTEGER,
+        image_url TEXT,
+        callout TEXT,
+        has_sizes BOOLEAN DEFAULT false,
+        price_small NUMERIC,
+        price_medium NUMERIC,
+        price_large NUMERIC,
+        offer_percentage NUMERIC,
+        offer_label TEXT,
+        offer_active BOOLEAN DEFAULT false,
+        offer_start_date TEXT,
+        offer_end_date TEXT,
+        stock INTEGER DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS orders (
+        id TEXT PRIMARY KEY,
+        customer_name TEXT NOT NULL,
+        customer_phone TEXT NOT NULL,
+        order_type TEXT NOT NULL DEFAULT 'takeaway',
+        items JSONB NOT NULL DEFAULT '[]',
+        subtotal NUMERIC DEFAULT 0,
+        tax NUMERIC DEFAULT 0,
+        delivery_fee NUMERIC DEFAULT 0,
+        total NUMERIC DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'Received',
+        branch TEXT DEFAULT 'Main',
+        delivery_address TEXT,
+        special_instructions TEXT,
+        payment_method TEXT DEFAULT 'cod',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS banners (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        subtitle TEXT NOT NULL DEFAULT '',
+        tag TEXT NOT NULL DEFAULT '',
+        tag_color TEXT NOT NULL DEFAULT '#FFD54F',
+        grad_start TEXT NOT NULL DEFAULT '#C8102E',
+        grad_end TEXT NOT NULL DEFAULT '#8B0000',
+        cta_label TEXT NOT NULL DEFAULT 'Order Now',
+        cta_cat TEXT NOT NULL DEFAULT 'deals',
+        image_url TEXT NOT NULL DEFAULT '',
+        active BOOLEAN NOT NULL DEFAULT true,
+        sort_order INTEGER NOT NULL DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value JSONB NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS reviews (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT 'anonymous',
+        user_name TEXT NOT NULL DEFAULT 'Anonymous',
+        rating INTEGER NOT NULL,
+        text TEXT NOT NULL,
+        image_url TEXT,
+        date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        approved BOOLEAN NOT NULL DEFAULT true
+      );
+
+      CREATE TABLE IF NOT EXISTS website_content (
+        key TEXT PRIMARY KEY,
+        label TEXT NOT NULL,
+        value TEXT NOT NULL DEFAULT '',
+        section TEXT NOT NULL DEFAULT 'general'
+      );
+
+      CREATE TABLE IF NOT EXISTS staff (
+        id TEXT PRIMARY KEY,
+        username TEXT NOT NULL,
+        name TEXT NOT NULL,
+        role TEXT NOT NULL,
+        active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        phone TEXT UNIQUE,
+        username TEXT UNIQUE,
+        password_hash TEXT,
+        email TEXT,
+        profile_pic_url TEXT,
+        loyalty_points INTEGER DEFAULT 0,
+        addresses JSONB DEFAULT '[]'
+      );
+
+      CREATE TABLE IF NOT EXISTS refresh_tokens (
+        token TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        expires_at BIGINT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS token_blacklist (
+        token TEXT PRIMARY KEY
+      );
+
+      CREATE TABLE IF NOT EXISTS otp_store (
+        phone TEXT PRIMARY KEY,
+        code TEXT NOT NULL,
+        name TEXT,
+        expires_at BIGINT NOT NULL,
+        attempts INTEGER DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS reservations (
+        id TEXT PRIMARY KEY,
+        customer_name TEXT NOT NULL,
+        customer_phone TEXT NOT NULL,
+        date TEXT NOT NULL,
+        time TEXT NOT NULL,
+        party_size INTEGER DEFAULT 2,
+        notes TEXT,
+        status TEXT NOT NULL DEFAULT 'confirmed',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+    console.log("Database tables initialized");
+  } finally {
+    client.release();
+  }
+}
+
+// src/seed.ts
+var CATEGORIES = [
+  { id: "cat-deals", name: "Deals", slug: "deals", emoji: "\u{1F525}" },
+  { id: "cat-chicken", name: "Chicken", slug: "chicken", emoji: "\u{1F357}" },
+  { id: "cat-burgers", name: "Burgers", slug: "burgers", emoji: "\u{1F354}" },
+  { id: "cat-wraps", name: "Wraps", slug: "wraps", emoji: "\u{1F32F}" },
+  { id: "cat-sides", name: "Sides", slug: "sides", emoji: "\u{1F35F}" },
+  { id: "cat-beverages", name: "Beverages", slug: "beverages", emoji: "\u{1F964}" },
+  { id: "cat-desserts", name: "Desserts", slug: "desserts", emoji: "\u{1F370}" },
+  { id: "cat-pizza", name: "Pizza", slug: "pizza", emoji: "\u{1F355}" },
+  { id: "cat-pasta", name: "Pasta", slug: "pasta", emoji: "\u{1F35D}" },
+  { id: "cat-handi", name: "Handi", slug: "handi", emoji: "\u{1F372}" },
+  { id: "cat-mandi", name: "Mandi", slug: "mandi", emoji: "\u{1F35B}" }
+];
+var MENU_ITEMS = [
+  { id: "m1", name: "Zinger Burger", description: "Crispy fried chicken fillet with spicy mayo and lettuce", price: 650, category: "Burgers", spicy: true, popular: true, calories: 520 },
+  { id: "m2", name: "THB Mighty Box", description: "2 pieces chicken, fries, coleslaw and a drink", price: 1200, category: "Deals", spicy: false, popular: true, calories: 1100 },
+  { id: "m3", name: "Crispy Strips (3pc)", description: "Tender chicken strips with your choice of dipping sauce", price: 490, category: "Chicken", spicy: false, popular: true, calories: 380 },
+  { id: "m4", name: "Spicy Wings (6pc)", description: "Hot and crispy chicken wings with THB signature spice blend", price: 580, category: "Chicken", spicy: true, popular: false, calories: 460 },
+  { id: "m5", name: "Chicken Wrap", description: "Grilled or crispy chicken in a soft tortilla with fresh veggies", price: 420, category: "Wraps", spicy: false, popular: false, calories: 340 },
+  { id: "m6", name: "Spicy Wrap", description: "Crispy chicken, jalape\xF1os, and hot sauce in a tortilla", price: 450, category: "Wraps", spicy: true, popular: false, calories: 360 },
+  { id: "m7", name: "Loaded Fries", description: "Crispy fries topped with cheese sauce and jalape\xF1os", price: 290, category: "Sides", spicy: false, popular: true, calories: 420, callout: "Check for real-time daily availability \u2014 Mutton dishes are prepared fresh each morning." },
+  { id: "m8", name: "Coleslaw", description: "Creamy house-made coleslaw", price: 120, category: "Sides", spicy: false, popular: false, calories: 130 },
+  { id: "m9", name: "Pepsi (Large)", description: "Chilled Pepsi 500ml", price: 150, category: "Beverages", spicy: false, popular: false, calories: 210 },
+  { id: "m10", name: "Chocolate Lava Cake", description: "Warm chocolate cake with a gooey molten center", price: 280, category: "Desserts", spicy: false, popular: true, calories: 380 },
+  { id: "m11", name: "Family Feast", description: "8pc chicken, 2 large fries, 4 drinks, coleslaw", price: 3200, category: "Deals", spicy: false, popular: true, calories: null },
+  { id: "m12", name: "Quarter Pounder", description: "Juicy beef patty with THB special sauce", price: 720, category: "Burgers", spicy: false, popular: false, calories: 580 },
+  { id: "m13", name: "Istanbul Pizza", description: "Wood-fired pizza with spiced chicken, peppers, and mozzarella", price: 850, category: "Pizza", spicy: false, popular: true, calories: 650 },
+  { id: "m14", name: "Chicken Tikka Pizza", description: "Hand-tossed pizza with tikka chicken, onions, and cheddar blend", price: 900, category: "Pizza", spicy: true, popular: true, calories: 680 },
+  { id: "m15", name: "Creamy Alfredo Pasta", description: "Fettuccine in rich Alfredo sauce with grilled chicken", price: 750, category: "Pasta", spicy: false, popular: true, calories: 520, callout: "Check for real-time daily availability \u2014 Mutton Handi is slow-cooked daily." },
+  { id: "m16", name: "Mutton Handi", description: "Slow-cooked mutton in rich, aromatic gravy with traditional spices", price: 1200, category: "Handi", spicy: true, popular: true, calories: 580 },
+  { id: "m17", name: "Chicken Handi", description: "Tender chicken cooked in creamy tomato-based handi gravy", price: 950, category: "Handi", spicy: false, popular: true, calories: 450 },
+  { id: "m18", name: "Mutton Mandi", description: "Tender mutton cooked on charcoal with fragrant basmati rice and spices", price: 1500, category: "Mandi", spicy: false, popular: true, calories: 720 },
+  { id: "m19", name: "Chicken Mandi", description: "Charcoal-grilled chicken with aromatic rice, raita, and traditional sides", price: 1100, category: "Mandi", spicy: false, popular: true, calories: 620 }
+];
+var BANNERS = [
+  {
+    id: "s1",
+    title: "Big Deals, Bigger Savings",
+    subtitle: "Save up to 40% on family meals",
+    tag: " LIMITED TIME",
+    tag_color: "#FFD54F",
+    grad_start: "#C8102E",
+    grad_end: "#8B0000",
+    cta_label: "Order Now",
+    cta_cat: "deals",
+    image_url: "/images/hero-banner.png",
+    active: true,
+    sort_order: 0
+  },
+  {
+    id: "s2",
+    title: "Istanbul Zinger Burger",
+    subtitle: "Crispy, spicy, irresistible",
+    tag: " BESTSELLER",
+    tag_color: "#FF6B35",
+    grad_start: "#FF6B35",
+    grad_end: "#D32F2F",
+    cta_label: "View Menu",
+    cta_cat: "burgers",
+    image_url: "/images/burger.png",
+    active: true,
+    sort_order: 1
+  },
+  {
+    id: "s3",
+    title: "Crispy Chicken",
+    subtitle: "Golden fried perfection",
+    tag: " POPULAR",
+    tag_color: "#4CAF50",
+    grad_start: "#2E7D32",
+    grad_end: "#1B5E20",
+    cta_label: "Order Now",
+    cta_cat: "chicken",
+    image_url: "/images/chicken.png",
+    active: true,
+    sort_order: 2
+  }
+];
+var SETTINGS = {
+  storeName: "The Hunger Bite Istanbul",
+  storePhone: "03121129700",
+  taxRate: 17,
+  deliveryFee: 99,
+  minOrderAmount: 500,
+  freeDeliveryOver: 2e3,
+  takeawayDiscount: 10,
+  preparationTime: 15,
+  deliveryTime: 45,
+  deliveryEnabled: true,
+  takeawayEnabled: true,
+  maxDeliveryRadius: 5
+};
+var WEBSITE_CONTENT = [
+  { key: "hero_title", label: "Hero Title", value: "Fresh, Halal Chicken", section: "hero" },
+  { key: "hero_subtitle", label: "Hero Subtitle", value: "Delivered to You", section: "hero" },
+  { key: "hero_cta", label: "Hero CTA Button", value: "Order Now", section: "hero" },
+  { key: "about_title", label: "About Title", value: "The Hunger Bite Istanbul", section: "about" },
+  { key: "about_description", label: "About Description", value: "We serve the freshest, halal-certified chicken dishes made with premium ingredients and our signature spice blends. Inspired by Turkish culinary traditions with a Pakistani heart, every bite is a commitment to quality and taste.", section: "about" },
+  { key: "about_mission", label: "Mission Statement", value: "To bring authentic, high-quality halal food to every table while maintaining our commitment to exceptional taste \u2014 blending Turkish culinary art with Pakistani hospitality.", section: "about" },
+  { key: "footer_copyright", label: "Footer Copyright", value: "2026 The Hunger Bite Istanbul. All rights reserved.", section: "footer" },
+  { key: "footer_phone", label: "Footer Phone", value: "03121129700", section: "footer" },
+  { key: "footer_email", label: "Footer Email", value: "info@thehungerbite.com", section: "footer" },
+  { key: "footer_address", label: "Footer Address", value: "Sector 4, Naval Colony, Karachi", section: "footer" },
+  { key: "contact_phone", label: "Contact Phone", value: "03121129700", section: "contact" },
+  { key: "contact_email", label: "Contact Email", value: "info@thehungerbite.com", section: "contact" },
+  { key: "contact_hours", label: "Working Hours", value: "10:00 AM - 12:00 AM", section: "contact" },
+  { key: "cta_title", label: "CTA Title", value: "Ready to Order?", section: "cta" },
+  { key: "cta_subtitle", label: "CTA Subtitle", value: "Fresh, halal-certified food delivered to your doorstep", section: "cta" },
+  { key: "cta_button", label: "CTA Button Text", value: "Explore Menu", section: "cta" },
+  { key: "story_hero_tagline", label: "Story Hero Tagline", value: "From Pakistan With Turkish Inspiration", section: "story" },
+  { key: "story_ceo_tagline", label: "Story CEO Tagline", value: "Made with heart by the THB Culinary Team", section: "story" }
+];
+async function seedDatabase() {
+  const client = await db_default.connect();
+  try {
+    const { rows: catRows } = await client.query("SELECT COUNT(*)::int as count FROM categories");
+    if (catRows[0].count > 0) {
+      console.log("Database already seeded, skipping");
+      return;
+    }
+    await client.query("BEGIN");
+    for (const c of CATEGORIES) {
+      await client.query("INSERT INTO categories (id, name, slug, emoji) VALUES ($1,$2,$3,$4)", [c.id, c.name, c.slug, c.emoji]);
+    }
+    for (const m of MENU_ITEMS) {
+      await client.query(
+        `INSERT INTO menu_items (id, name, description, price, category, available, spicy, popular, calories, image_url, callout)
+         VALUES ($1,$2,$3,$4,$5,true,$6,$7,$8,null,$9)`,
+        [m.id, m.name, m.description, m.price, m.category, m.spicy, m.popular, m.calories, m.callout || null]
+      );
+    }
+    for (const b of BANNERS) {
+      await client.query(
+        `INSERT INTO banners (id, title, subtitle, tag, tag_color, grad_start, grad_end, cta_label, cta_cat, image_url, active, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [b.id, b.title, b.subtitle, b.tag, b.tag_color, b.grad_start, b.grad_end, b.cta_label, b.cta_cat, b.image_url, b.active, b.sort_order]
+      );
+    }
+    await client.query("INSERT INTO settings (key, value) VALUES ('store', $1)", [JSON.stringify(SETTINGS)]);
+    for (const w of WEBSITE_CONTENT) {
+      await client.query("INSERT INTO website_content (key, label, value, section) VALUES ($1,$2,$3,$4)", [w.key, w.label, w.value, w.section]);
+    }
+    const sampleOrders = [
+      { id: "o1001", customer_name: "Ahmed Raza", customer_phone: "0300-1234567", order_type: "Dine In", items: [{ name: "THB Mighty Box", quantity: 2, price: 1200 }, { name: "Pepsi (Large)", quantity: 2, price: 150 }], total: 2700, status: "Preparing" },
+      { id: "o1002", customer_name: "Sara Khan", customer_phone: "0321-9876543", order_type: "Delivery", items: [{ name: "Zinger Burger", quantity: 1, price: 650 }, { name: "Loaded Fries", quantity: 1, price: 290 }, { name: "Pepsi (Large)", quantity: 1, price: 150 }], total: 1090, status: "Received" },
+      { id: "o1003", customer_name: "Bilal Akhtar", customer_phone: "0333-5550123", order_type: "Takeaway", items: [{ name: "Crispy Strips (3pc)", quantity: 2, price: 490 }, { name: "Coleslaw", quantity: 1, price: 120 }], total: 1100, status: "Ready" },
+      { id: "o1004", customer_name: "Fatima Malik", customer_phone: "0312-7771234", order_type: "Delivery", items: [{ name: "Family Feast", quantity: 1, price: 3200 }], total: 3200, status: "Delivered" },
+      { id: "o1005", customer_name: "Usman Tariq", customer_phone: "0345-2223344", order_type: "Dine In", items: [{ name: "Spicy Wings (6pc)", quantity: 1, price: 580 }, { name: "Loaded Fries", quantity: 2, price: 290 }, { name: "Pepsi (Large)", quantity: 2, price: 150 }], total: 1460, status: "Preparing" },
+      { id: "o1006", customer_name: "Nadia Hussain", customer_phone: "0311-4445566", order_type: "Takeaway", items: [{ name: "Chicken Wrap", quantity: 2, price: 420 }, { name: "Spicy Wrap", quantity: 1, price: 450 }], total: 1290, status: "Delivered" }
+    ];
+    for (const o of sampleOrders) {
+      await client.query(
+        `INSERT INTO orders (id, customer_name, customer_phone, order_type, items, total, status, created_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,NOW() - interval '${Math.floor(Math.random() * 120)} minutes')`,
+        [o.id, o.customer_name, o.customer_phone, o.order_type, JSON.stringify(o.items), o.total, o.status]
+      );
+    }
+    await client.query("COMMIT");
+    console.log("Database seeded successfully");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
 // src/index.ts
 var rawPort = process.env["PORT"] || "8080";
 var port = Number(rawPort);
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
-app_default.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
+async function main() {
+  try {
+    await initDatabase();
+    await seedDatabase();
+    console.log("Database ready");
+  } catch (err) {
+    console.error("Database init failed:", err);
     process.exit(1);
   }
-  logger.info({ port }, "Server listening");
-});
+  app_default.listen(port, (err) => {
+    if (err) {
+      logger.error({ err }, "Error listening on port");
+      process.exit(1);
+    }
+    logger.info({ port }, "Server listening");
+  });
+}
+main();
 /*! Bundled license information:
 
 depd/index.js:

@@ -1,8 +1,7 @@
 import { Router, type IRouter } from "express";
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 import jwt from "jsonwebtoken";
-import { verifyAccessToken } from "./auth";
+import { verifyAccessToken } from "./auth.js";
+import pool from "../db.js";
 import {
   UpdateAdminMenuItemParams,
   UpdateAdminMenuItemBody,
@@ -15,237 +14,17 @@ import {
   ListAdminMenuItemsResponseItem,
   ListAdminOrdersResponseItem,
   GetAdminAnalyticsResponse,
-  GetMobileMenuResponseItem,
   CreateAdminCategoryBody,
   DeleteAdminCategoryParams,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
-// ---------- Types ----------
-
-type MenuItem = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  available: boolean;
-  spicy: boolean;
-  popular: boolean;
-  calories: number | null;
-  imageUrl: string | null;
-  callout: string | null;
-  hasSizes?: boolean;
-  priceSmall?: number | null;
-  priceMedium?: number | null;
-  priceLarge?: number | null;
-  offerPercentage?: number | null;
-  offerLabel?: string | null;
-  offerActive?: boolean;
-  offerStartDate?: string | null;
-  offerEndDate?: string | null;
-};
-
-type OrderItem = { name: string; quantity: number; price: number };
-
-type Order = {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  orderType: string;
-  items: OrderItem[];
-  total: number;
-  status: string;
-  createdAt: string;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  slug: string;
-  emoji?: string;
-};
-
-type StoreData = {
-  menuItems: MenuItem[];
-  orders: Order[];
-  categories: Category[];
-};
-
-// ---------- Defaults ----------
-
-const DATA_DIR = join(process.cwd(), "data");
-const DATA_FILE = join(DATA_DIR, "store.json");
-
-const DEFAULT_CATEGORIES: Category[] = [
-  { id: "cat-deals", name: "Deals", slug: "deals", emoji: "🔥" },
-  { id: "cat-chicken", name: "Chicken", slug: "chicken", emoji: "🍗" },
-  { id: "cat-burgers", name: "Burgers", slug: "burgers", emoji: "🍔" },
-  { id: "cat-wraps", name: "Wraps", slug: "wraps", emoji: "🌯" },
-  { id: "cat-sides", name: "Sides", slug: "sides", emoji: "🍟" },
-  { id: "cat-beverages", name: "Beverages", slug: "beverages", emoji: "🥤" },
-  { id: "cat-desserts", name: "Desserts", slug: "desserts", emoji: "🍰" },
-  { id: "cat-pizza", name: "Pizza", slug: "pizza", emoji: "🍕" },
-  { id: "cat-pasta", name: "Pasta", slug: "pasta", emoji: "🍝" },
-  { id: "cat-handi", name: "Handi", slug: "handi", emoji: "🍲" },
-  { id: "cat-mandi", name: "Mandi", slug: "mandi", emoji: "🍛" },
-];
-
-const DEFAULT_MENU: MenuItem[] = [
-  { id: "m1", name: "Zinger Burger", description: "Crispy fried chicken fillet with spicy mayo and lettuce", price: 650, category: "Burgers", available: true, spicy: true, popular: true, calories: 520, imageUrl: null, callout: null },
-  { id: "m2", name: "THB Mighty Box", description: "2 pieces chicken, fries, coleslaw and a drink", price: 1200, category: "Deals", available: true, spicy: false, popular: true, calories: 1100, imageUrl: null, callout: null },
-  { id: "m3", name: "Crispy Strips (3pc)", description: "Tender chicken strips with your choice of dipping sauce", price: 490, category: "Chicken", available: true, spicy: false, popular: true, calories: 380, imageUrl: null, callout: null },
-  { id: "m4", name: "Spicy Wings (6pc)", description: "Hot and crispy chicken wings with THB signature spice blend", price: 580, category: "Chicken", available: true, spicy: true, popular: false, calories: 460, imageUrl: null, callout: null },
-  { id: "m5", name: "Chicken Wrap", description: "Grilled or crispy chicken in a soft tortilla with fresh veggies", price: 420, category: "Wraps", available: true, spicy: false, popular: false, calories: 340, imageUrl: null, callout: null },
-  { id: "m6", name: "Spicy Wrap", description: "Crispy chicken, jalapeños, and hot sauce in a tortilla", price: 450, category: "Wraps", available: true, spicy: true, popular: false, calories: 360, imageUrl: null, callout: null },
-  { id: "m7", name: "Loaded Fries", description: "Crispy fries topped with cheese sauce and jalapeños", price: 290, category: "Sides", available: true, spicy: false, popular: true, calories: 420, imageUrl: null, callout: "Check for real-time daily availability — Mutton dishes are prepared fresh each morning." },
-  { id: "m8", name: "Coleslaw", description: "Creamy house-made coleslaw", price: 120, category: "Sides", available: true, spicy: false, popular: false, calories: 130, imageUrl: null, callout: null },
-  { id: "m9", name: "Pepsi (Large)", description: "Chilled Pepsi 500ml", price: 150, category: "Beverages", available: true, spicy: false, popular: false, calories: 210, imageUrl: null, callout: null },
-  { id: "m10", name: "Chocolate Lava Cake", description: "Warm chocolate cake with a gooey molten center", price: 280, category: "Desserts", available: true, spicy: false, popular: true, calories: 380, imageUrl: null, callout: null },
-  { id: "m11", name: "Family Feast", description: "8pc chicken, 2 large fries, 4 drinks, coleslaw", price: 3200, category: "Deals", available: true, spicy: false, popular: true, calories: null, imageUrl: null, callout: null },
-  { id: "m12", name: "Quarter Pounder", description: "Juicy beef patty with THB special sauce", price: 720, category: "Burgers", available: true, spicy: false, popular: false, calories: 580, imageUrl: null, callout: null },
-  { id: "m13", name: "Istanbul Pizza", description: "Wood-fired pizza with spiced chicken, peppers, and mozzarella", price: 850, category: "Pizza", available: true, spicy: false, popular: true, calories: 650, imageUrl: null, callout: null },
-  { id: "m14", name: "Chicken Tikka Pizza", description: "Hand-tossed pizza with tikka chicken, onions, and cheddar blend", price: 900, category: "Pizza", available: true, spicy: true, popular: true, calories: 680, imageUrl: null, callout: null },
-  { id: "m15", name: "Creamy Alfredo Pasta", description: "Fettuccine in rich Alfredo sauce with grilled chicken", price: 750, category: "Pasta", available: true, spicy: false, popular: true, calories: 520, imageUrl: null, callout: "Check for real-time daily availability — Mutton Handi is slow-cooked daily." },
-  { id: "m16", name: "Mutton Handi", description: "Slow-cooked mutton in rich, aromatic gravy with traditional spices", price: 1200, category: "Handi", available: true, spicy: true, popular: true, calories: 580, imageUrl: null, callout: null },
-  { id: "m17", name: "Chicken Handi", description: "Tender chicken cooked in creamy tomato-based handi gravy", price: 950, category: "Handi", available: true, spicy: false, popular: true, calories: 450, imageUrl: null, callout: null },
-  { id: "m18", name: "Mutton Mandi", description: "Tender mutton cooked on charcoal with fragrant basmati rice and spices", price: 1500, category: "Mandi", available: true, spicy: false, popular: true, calories: 720, imageUrl: null, callout: null },
-  { id: "m19", name: "Chicken Mandi", description: "Charcoal-grilled chicken with aromatic rice, raita, and traditional sides", price: 1100, category: "Mandi", available: true, spicy: false, popular: true, calories: 620, imageUrl: null, callout: null },
-];
-
-const DEFAULT_ORDERS: Order[] = [
-  {
-    id: "o1001", customerName: "Ahmed Raza", customerPhone: "0300-1234567", orderType: "Dine In",
-    items: [{ name: "THB Mighty Box", quantity: 2, price: 1200 }, { name: "Pepsi (Large)", quantity: 2, price: 150 }],
-    total: 2700, status: "Preparing", createdAt: new Date(Date.now() - 15 * 60000).toISOString(),
-  },
-  {
-    id: "o1002", customerName: "Sara Khan", customerPhone: "0321-9876543", orderType: "Delivery",
-    items: [{ name: "Zinger Burger", quantity: 1, price: 650 }, { name: "Loaded Fries", quantity: 1, price: 290 }, { name: "Pepsi (Large)", quantity: 1, price: 150 }],
-    total: 1090, status: "Received", createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
-  },
-  {
-    id: "o1003", customerName: "Bilal Akhtar", customerPhone: "0333-5550123", orderType: "Takeaway",
-    items: [{ name: "Crispy Strips (3pc)", quantity: 2, price: 490 }, { name: "Coleslaw", quantity: 1, price: 120 }],
-    total: 1100, status: "Ready", createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
-  },
-  {
-    id: "o1004", customerName: "Fatima Malik", customerPhone: "0312-7771234", orderType: "Delivery",
-    items: [{ name: "Family Feast", quantity: 1, price: 3200 }],
-    total: 3200, status: "Delivered", createdAt: new Date(Date.now() - 90 * 60000).toISOString(),
-  },
-  {
-    id: "o1005", customerName: "Usman Tariq", customerPhone: "0345-2223344", orderType: "Dine In",
-    items: [{ name: "Spicy Wings (6pc)", quantity: 1, price: 580 }, { name: "Loaded Fries", quantity: 2, price: 290 }, { name: "Pepsi (Large)", quantity: 2, price: 150 }],
-    total: 1460, status: "Preparing", createdAt: new Date(Date.now() - 22 * 60000).toISOString(),
-  },
-  {
-    id: "o1006", customerName: "Nadia Hussain", customerPhone: "0311-4445566", orderType: "Takeaway",
-    items: [{ name: "Chicken Wrap", quantity: 2, price: 420 }, { name: "Spicy Wrap", quantity: 1, price: 450 }],
-    total: 1290, status: "Delivered", createdAt: new Date(Date.now() - 120 * 60000).toISOString(),
-  },
-];
-
-// ---------- Persistence ----------
-
-async function loadStore(): Promise<StoreData> {
-  try {
-    const raw = await readFile(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw) as Partial<StoreData>;
-    return {
-      menuItems: parsed.menuItems ?? DEFAULT_MENU,
-      orders: parsed.orders ?? DEFAULT_ORDERS,
-      categories: parsed.categories ?? DEFAULT_CATEGORIES,
-    };
-  } catch {
-    return { menuItems: DEFAULT_MENU, orders: DEFAULT_ORDERS, categories: DEFAULT_CATEGORIES };
-  }
-}
-
-async function saveStore(data: StoreData): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
-}
-
-// ---------- Analytics helper ----------
-
-function buildAnalytics(store: StoreData, startDate?: string, endDate?: string) {
-  const { menuItems, orders } = store;
-
-  const filteredOrders = orders.filter((o) => {
-    const orderDate = new Date(o.createdAt);
-    if (startDate && orderDate < new Date(startDate)) return false;
-    if (endDate && orderDate > new Date(endDate + "T23:59:59")) return false;
-    return true;
-  });
-
-  const totalRevenue = filteredOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-  const totalOrders = filteredOrders.length;
-  const activeOrders = filteredOrders.filter((o) => ["Received", "Preparing", "Ready"].includes(o.status)).length;
-  const outOfStockItems = menuItems.filter((m) => !m.available).length;
-
-  const categoryMap: Record<string, { orders: number; revenue: number }> = {};
-  for (const order of filteredOrders) {
-    for (const item of order.items) {
-      const menuItem = menuItems.find((m) => m.name === item.name);
-      const cat = menuItem?.category ?? "Other";
-      if (!categoryMap[cat]) categoryMap[cat] = { orders: 0, revenue: 0 };
-      categoryMap[cat].orders += item.quantity;
-      categoryMap[cat].revenue += item.price * item.quantity;
-    }
-  }
-  const categoryBreakdown = Object.entries(categoryMap).map(([category, stats]) => ({
-    category, orders: stats.orders, revenue: stats.revenue,
-  }));
-
-  const dailyMap: Record<string, { revenue: number; orders: number }> = {};
-  for (const order of filteredOrders) {
-    const d = new Date(order.createdAt);
-    if (isNaN(d.getTime())) continue;
-    const day = d.toISOString().split("T")[0];
-    if (!dailyMap[day]) dailyMap[day] = { revenue: 0, orders: 0 };
-    dailyMap[day].revenue += order.total || 0;
-    dailyMap[day].orders += 1;
-  }
-
-  const sortedDays = Object.keys(dailyMap).sort();
-  const rangeStart = sortedDays[0] || new Date().toISOString().split("T")[0];
-  const rangeEnd = sortedDays[sortedDays.length - 1] || new Date().toISOString().split("T")[0];
-
-  const dailyRevenue: { date: string; revenue: number; orders: number }[] = [];
-  const current = new Date(rangeStart);
-  const endD = new Date(rangeEnd);
-  while (current <= endD) {
-    const key = current.toISOString().split("T")[0];
-    dailyRevenue.push({ date: key, revenue: dailyMap[key]?.revenue || 0, orders: dailyMap[key]?.orders || 0 });
-    current.setDate(current.getDate() + 1);
-  }
-
-  if (dailyRevenue.length === 0) {
-    const today = new Date().toISOString().split("T")[0];
-    dailyRevenue.push({ date: today, revenue: 0, orders: 0 });
-  }
-
-  // Top selling items
-  const itemMap: Record<string, { name: string; quantity: number; revenue: number }> = {};
-  for (const order of filteredOrders) {
-    for (const item of order.items) {
-      if (!itemMap[item.name]) itemMap[item.name] = { name: item.name, quantity: 0, revenue: 0 };
-      itemMap[item.name].quantity += item.quantity;
-      itemMap[item.name].revenue += item.price * item.quantity;
-    }
-  }
-  const topItems = Object.values(itemMap).sort((a, b) => b.quantity - a.quantity).slice(0, 10);
-
-  return { totalRevenue, totalOrders, activeOrders, outOfStockItems, categoryBreakdown, dailyRevenue, topItems };
-}
-
-// ---------- Admin Auth ----------
-
 const ADMIN_USERNAME = "THB_ADMIN";
 const ADMIN_PASSWORD = "TBH_PASSWORD_123";
 const JWT_SECRET = process.env.JWT_SECRET || "thb-jwt-secret-2026-production-key-xK9mPz";
+
+// ---------- Admin Auth ----------
 
 router.post("/admin/auth", (req, res): void => {
   const { username, password } = req.body;
@@ -275,22 +54,101 @@ export function adminAuth(req: any, res: any, next: any) {
 // ---------- Analytics ----------
 
 router.get("/admin/analytics", async (req, res): Promise<void> => {
-  const { startDate, endDate } = req.query;
-  const store = await loadStore();
-  const analytics = buildAnalytics(store, startDate as string, endDate as string);
-  res.json(GetAdminAnalyticsResponse.parse(analytics));
+  try {
+    const { startDate, endDate } = req.query;
+    let dateFilter = "";
+    const params: any[] = [];
+
+    if (startDate) {
+      params.push(startDate);
+      dateFilter += ` AND created_at >= $${params.length}::timestamptz`;
+    }
+    if (endDate) {
+      params.push(endDate + "T23:59:59");
+      dateFilter += ` AND created_at <= $${params.length}::timestamptz`;
+    }
+
+    const { rows: orders } = await pool.query(`SELECT * FROM orders WHERE true ${dateFilter}`, params);
+    const { rows: menuItems } = await pool.query("SELECT * FROM menu_items");
+
+    const totalRevenue = orders.reduce((sum: number, o: any) => sum + (Number(o.total) || 0), 0);
+    const totalOrders = orders.length;
+    const activeOrders = orders.filter((o: any) => ["Received", "Preparing", "Ready"].includes(o.status)).length;
+    const outOfStockItems = menuItems.filter((m: any) => !m.available).length;
+
+    const categoryMap: Record<string, { orders: number; revenue: number }> = {};
+    for (const order of orders) {
+      const items = typeof order.items === "string" ? JSON.parse(order.items) : order.items;
+      for (const item of items) {
+        const menuItem = menuItems.find((m: any) => m.name === item.name);
+        const cat = menuItem?.category ?? "Other";
+        if (!categoryMap[cat]) categoryMap[cat] = { orders: 0, revenue: 0 };
+        categoryMap[cat].orders += item.quantity;
+        categoryMap[cat].revenue += item.price * item.quantity;
+      }
+    }
+    const categoryBreakdown = Object.entries(categoryMap).map(([category, stats]) => ({
+      category, orders: stats.orders, revenue: stats.revenue,
+    }));
+
+    const dailyMap: Record<string, { revenue: number; orders: number }> = {};
+    for (const order of orders) {
+      const d = new Date(order.created_at);
+      if (isNaN(d.getTime())) continue;
+      const day = d.toISOString().split("T")[0];
+      if (!dailyMap[day]) dailyMap[day] = { revenue: 0, orders: 0 };
+      dailyMap[day].revenue += Number(order.total) || 0;
+      dailyMap[day].orders += 1;
+    }
+
+    const sortedDays = Object.keys(dailyMap).sort();
+    const rangeStart = sortedDays[0] || new Date().toISOString().split("T")[0];
+    const rangeEnd = sortedDays[sortedDays.length - 1] || new Date().toISOString().split("T")[0];
+
+    const dailyRevenue: { date: string; revenue: number; orders: number }[] = [];
+    const current = new Date(rangeStart);
+    const endD = new Date(rangeEnd);
+    while (current <= endD) {
+      const key = current.toISOString().split("T")[0];
+      dailyRevenue.push({ date: key, revenue: dailyMap[key]?.revenue || 0, orders: dailyMap[key]?.orders || 0 });
+      current.setDate(current.getDate() + 1);
+    }
+    if (dailyRevenue.length === 0) {
+      const today = new Date().toISOString().split("T")[0];
+      dailyRevenue.push({ date: today, revenue: 0, orders: 0 });
+    }
+
+    const itemMap: Record<string, { name: string; quantity: number; revenue: number }> = {};
+    for (const order of orders) {
+      const items = typeof order.items === "string" ? JSON.parse(order.items) : order.items;
+      for (const item of items) {
+        if (!itemMap[item.name]) itemMap[item.name] = { name: item.name, quantity: 0, revenue: 0 };
+        itemMap[item.name].quantity += item.quantity;
+        itemMap[item.name].revenue += item.price * item.quantity;
+      }
+    }
+    const topItems = Object.values(itemMap).sort((a, b) => b.quantity - a.quantity).slice(0, 10);
+
+    res.json(GetAdminAnalyticsResponse.parse({ totalRevenue, totalOrders, activeOrders, outOfStockItems, categoryBreakdown, dailyRevenue, topItems }));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ---------- Categories ----------
 
 router.get("/admin/categories", async (_req, res): Promise<void> => {
-  const store = await loadStore();
-  const cats = store.categories ?? DEFAULT_CATEGORIES;
-  const result = cats.map((c) => ({
-    ...c,
-    itemCount: store.menuItems.filter((m) => m.category.toLowerCase() === c.name.toLowerCase() || m.category === c.name).length,
-  }));
-  res.json(result);
+  try {
+    const { rows: cats } = await pool.query("SELECT * FROM categories ORDER BY name");
+    const { rows: menuItems } = await pool.query("SELECT category FROM menu_items");
+    const result = cats.map((c: any) => ({
+      ...c,
+      itemCount: menuItems.filter((m: any) => m.category.toLowerCase() === c.name.toLowerCase()).length,
+    }));
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.post("/admin/categories", adminAuth, async (req, res): Promise<void> => {
@@ -299,24 +157,20 @@ router.post("/admin/categories", adminAuth, async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const store = await loadStore();
-  const cats = store.categories ?? DEFAULT_CATEGORIES;
-  const exists = cats.some(
-    (c) => c.slug === parsed.data.slug || c.name.toLowerCase() === parsed.data.name.toLowerCase()
-  );
-  if (exists) {
-    res.status(409).json({ error: "A category with this name or slug already exists" });
-    return;
+  try {
+    const { rows: existing } = await pool.query("SELECT id FROM categories WHERE slug = $1 OR LOWER(name) = LOWER($2)", [parsed.data.slug, parsed.data.name]);
+    if (existing.length > 0) {
+      res.status(409).json({ error: "A category with this name or slug already exists" });
+      return;
+    }
+    const { rows } = await pool.query(
+      "INSERT INTO categories (id, name, slug, emoji) VALUES ($1,$2,$3,$4) RETURNING *",
+      [`cat-${Date.now()}`, parsed.data.name, parsed.data.slug, parsed.data.emoji || null]
+    );
+    res.status(201).json({ ...rows[0], itemCount: 0 });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-  const newCat: Category = {
-    id: `cat-${Date.now()}`,
-    name: parsed.data.name,
-    slug: parsed.data.slug,
-    emoji: parsed.data.emoji ?? undefined,
-  };
-  store.categories = [...cats, newCat];
-  await saveStore(store);
-  res.status(201).json({ ...newCat, itemCount: 0 });
 });
 
 router.delete("/admin/categories/:id", adminAuth, async (req, res): Promise<void> => {
@@ -326,28 +180,33 @@ router.delete("/admin/categories/:id", adminAuth, async (req, res): Promise<void
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const store = await loadStore();
-  const cats = store.categories ?? DEFAULT_CATEGORIES;
-  const cat = cats.find((c) => c.id === params.data.id);
-  if (!cat) {
-    res.status(404).json({ error: "Category not found" });
-    return;
+  try {
+    const { rows: cat } = await pool.query("SELECT * FROM categories WHERE id = $1", [params.data.id]);
+    if (cat.length === 0) {
+      res.status(404).json({ error: "Category not found" });
+      return;
+    }
+    const { rows: items } = await pool.query("SELECT COUNT(*)::int as count FROM menu_items WHERE LOWER(category) = LOWER($1)", [cat[0].name]);
+    if (items[0].count > 0) {
+      res.status(409).json({ error: `Cannot delete — ${items[0].count} menu item(s) use this category` });
+      return;
+    }
+    await pool.query("DELETE FROM categories WHERE id = $1", [params.data.id]);
+    res.sendStatus(204);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-  const itemCount = store.menuItems.filter((m) => m.category.toLowerCase() === cat.name.toLowerCase()).length;
-  if (itemCount > 0) {
-    res.status(409).json({ error: `Cannot delete — ${itemCount} menu item(s) use this category` });
-    return;
-  }
-  store.categories = cats.filter((c) => c.id !== params.data.id);
-  await saveStore(store);
-  res.sendStatus(204);
 });
 
 // ---------- Menu ----------
 
 router.get("/admin/menu", async (_req, res): Promise<void> => {
-  const store = await loadStore();
-  res.json(store.menuItems.map((m) => ListAdminMenuItemsResponseItem.parse(m)));
+  try {
+    const { rows } = await pool.query("SELECT * FROM menu_items ORDER BY id");
+    res.json(rows.map((r: any) => ListAdminMenuItemsResponseItem.parse(r)));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.post("/admin/menu", adminAuth, async (req, res): Promise<void> => {
@@ -356,28 +215,20 @@ router.post("/admin/menu", adminAuth, async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const store = await loadStore();
-  const newItem: MenuItem = {
-    id: `m${Date.now()}`,
-    name: parsed.data.name,
-    description: parsed.data.description,
-    price: parsed.data.price,
-    category: parsed.data.category,
-    available: true,
-    spicy: parsed.data.spicy ?? false,
-    popular: parsed.data.popular ?? false,
-    calories: parsed.data.calories ?? null,
-    imageUrl: parsed.data.imageUrl ?? null,
-    callout: parsed.data.callout ?? null,
-    offerPercentage: parsed.data.offerPercentage ?? null,
-    offerLabel: parsed.data.offerLabel ?? null,
-    offerActive: parsed.data.offerActive ?? false,
-    offerStartDate: parsed.data.offerStartDate ?? null,
-    offerEndDate: parsed.data.offerEndDate ?? null,
-  };
-  store.menuItems.push(newItem);
-  await saveStore(store);
-  res.status(201).json(ListAdminMenuItemsResponseItem.parse(newItem));
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO menu_items (id, name, description, price, category, available, spicy, popular, calories, image_url, callout, offer_percentage, offer_label, offer_active, offer_start_date, offer_end_date)
+       VALUES ($1,$2,$3,$4,$5,true,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
+      [`m${Date.now()}`, parsed.data.name, parsed.data.description, parsed.data.price, parsed.data.category,
+       parsed.data.spicy ?? false, parsed.data.popular ?? false, parsed.data.calories ?? null,
+       parsed.data.imageUrl ?? null, parsed.data.callout ?? null,
+       parsed.data.offerPercentage ?? null, parsed.data.offerLabel ?? null, parsed.data.offerActive ?? false,
+       parsed.data.offerStartDate ?? null, parsed.data.offerEndDate ?? null]
+    );
+    res.status(201).json(ListAdminMenuItemsResponseItem.parse(rows[0]));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.patch("/admin/menu/:id", adminAuth, async (req, res): Promise<void> => {
@@ -392,15 +243,31 @@ router.patch("/admin/menu/:id", adminAuth, async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const store = await loadStore();
-  const idx = store.menuItems.findIndex((m) => m.id === params.data.id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Menu item not found" });
-    return;
+  try {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+    for (const [key, val] of Object.entries(parsed.data)) {
+      if (val === undefined) continue;
+      const dbKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+      fields.push(`${dbKey} = $${idx}`);
+      values.push(typeof val === "object" ? JSON.stringify(val) : val);
+      idx++;
+    }
+    if (fields.length === 0) {
+      res.status(400).json({ error: "No fields to update" });
+      return;
+    }
+    values.push(params.data.id);
+    const { rows } = await pool.query(`UPDATE menu_items SET ${fields.join(", ")} WHERE id = $${idx} RETURNING *`, values);
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Menu item not found" });
+      return;
+    }
+    res.json(UpdateAdminMenuItemResponse.parse(rows[0]));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-  store.menuItems[idx] = { ...store.menuItems[idx], ...parsed.data } as MenuItem;
-  await saveStore(store);
-  res.json(UpdateAdminMenuItemResponse.parse(store.menuItems[idx]));
 });
 
 router.delete("/admin/menu/:id", adminAuth, async (req, res): Promise<void> => {
@@ -410,25 +277,27 @@ router.delete("/admin/menu/:id", adminAuth, async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const store = await loadStore();
-  const idx = store.menuItems.findIndex((m) => m.id === params.data.id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Menu item not found" });
-    return;
+  try {
+    const { rowCount } = await pool.query("DELETE FROM menu_items WHERE id = $1", [params.data.id]);
+    if (rowCount === 0) {
+      res.status(404).json({ error: "Menu item not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-  store.menuItems.splice(idx, 1);
-  await saveStore(store);
-  res.sendStatus(204);
 });
 
 // ---------- Orders ----------
 
 router.get("/admin/orders", async (_req, res): Promise<void> => {
-  const store = await loadStore();
-  const sorted = [...store.orders].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
-  res.json(sorted.map((o) => ListAdminOrdersResponseItem.parse({ ...o, branch: o.branch ?? "Main" })));
+  try {
+    const { rows } = await pool.query("SELECT * FROM orders ORDER BY created_at DESC");
+    res.json(rows.map((o: any) => ListAdminOrdersResponseItem.parse({ ...o, branch: o.branch ?? "Main" })));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.patch("/admin/orders/:id/status", adminAuth, async (req, res): Promise<void> => {
@@ -443,22 +312,30 @@ router.patch("/admin/orders/:id/status", adminAuth, async (req, res): Promise<vo
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const store = await loadStore();
-  const idx = store.orders.findIndex((o) => o.id === params.data.id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Order not found" });
-    return;
+  try {
+    const { rows } = await pool.query(
+      "UPDATE orders SET status = $1 WHERE id = $2 RETURNING *",
+      [parsed.data.status, params.data.id]
+    );
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+    res.json(UpdateAdminOrderStatusResponse.parse({ ...rows[0], branch: rows[0].branch ?? "Main" }));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-  store.orders[idx] = { ...store.orders[idx], status: parsed.data.status };
-  await saveStore(store);
-  res.json(UpdateAdminOrderStatusResponse.parse({ ...store.orders[idx], branch: store.orders[idx].branch ?? "Main" }));
 });
 
 // ---------- Staff Management ----------
 
 router.get("/admin/staff", adminAuth, async (_req, res): Promise<void> => {
-  const store = await loadStore();
-  res.json(store.staff || []);
+  try {
+    const { rows } = await pool.query("SELECT * FROM staff ORDER BY created_at DESC");
+    res.json(rows);
+  } catch (err: any) {
+    res.json([]);
+  }
 });
 
 router.post("/admin/staff", adminAuth, async (req, res): Promise<void> => {
@@ -467,37 +344,46 @@ router.post("/admin/staff", adminAuth, async (req, res): Promise<void> => {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const store = await loadStore();
-  if (!store.staff) store.staff = [];
-  const member = {
-    id: `STF${Date.now().toString().slice(-6)}`,
-    username,
-    name,
-    role,
-    active: true,
-    createdAt: new Date().toISOString(),
-  };
-  store.staff.push(member);
-  await saveStore(store);
-  res.status(201).json(member);
+  try {
+    const { rows } = await pool.query(
+      "INSERT INTO staff (id, username, name, role, active) VALUES ($1,$2,$3,$4,true) RETURNING *",
+      [`STF${Date.now().toString().slice(-6)}`, username, name, role]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.patch("/admin/staff/:id", adminAuth, async (req, res): Promise<void> => {
   const id = req.params["id"];
-  const store = await loadStore();
-  const idx = (store.staff || []).findIndex((s: any) => s.id === id);
-  if (idx === -1) { res.status(404).json({ error: "Staff not found" }); return; }
-  store.staff[idx] = { ...store.staff[idx], ...req.body };
-  await saveStore(store);
-  res.json(store.staff[idx]);
+  try {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+    for (const [key, val] of Object.entries(req.body)) {
+      fields.push(`${key} = $${idx}`);
+      values.push(val);
+      idx++;
+    }
+    if (fields.length === 0) { res.status(400).json({ error: "Nothing to update" }); return; }
+    values.push(id);
+    const { rows } = await pool.query(`UPDATE staff SET ${fields.join(", ")} WHERE id = $${idx} RETURNING *`, values);
+    if (rows.length === 0) { res.status(404).json({ error: "Staff not found" }); return; }
+    res.json(rows[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.delete("/admin/staff/:id", adminAuth, async (req, res): Promise<void> => {
   const id = req.params["id"];
-  const store = await loadStore();
-  store.staff = (store.staff || []).filter((s: any) => s.id !== id);
-  await saveStore(store);
-  res.sendStatus(204);
+  try {
+    await pool.query("DELETE FROM staff WHERE id = $1", [id]);
+    res.sendStatus(204);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ---------- Inventory ----------
@@ -505,12 +391,16 @@ router.delete("/admin/staff/:id", adminAuth, async (req, res): Promise<void> => 
 router.patch("/admin/menu/:id/stock", adminAuth, async (req, res): Promise<void> => {
   const id = req.params["id"];
   const { stock } = req.body;
-  const store = await loadStore();
-  const idx = store.menuItems.findIndex((m) => m.id === id);
-  if (idx === -1) { res.status(404).json({ error: "Item not found" }); return; }
-  store.menuItems[idx] = { ...store.menuItems[idx], stock: Number(stock) };
-  await saveStore(store);
-  res.json(store.menuItems[idx]);
+  try {
+    const { rows } = await pool.query(
+      "UPDATE menu_items SET stock = $1 WHERE id = $2 RETURNING *",
+      [Number(stock), id]
+    );
+    if (rows.length === 0) { res.status(404).json({ error: "Item not found" }); return; }
+    res.json(rows[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

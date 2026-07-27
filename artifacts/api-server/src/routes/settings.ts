@@ -1,29 +1,10 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { adminAuth } from "./admin";
+import pool from "../db.js";
+import { adminAuth } from "./admin.js";
 
 const router: IRouter = Router();
 
-type Settings = {
-  storeName: string;
-  storePhone: string;
-  taxRate: number;
-  deliveryFee: number;
-  minOrderAmount: number;
-  freeDeliveryOver: number;
-  takeawayDiscount: number;
-  preparationTime: number;
-  deliveryTime: number;
-  deliveryEnabled: boolean;
-  takeawayEnabled: boolean;
-  maxDeliveryRadius: number;
-};
-
-const DATA_DIR = join(process.cwd(), "data");
-const SETTINGS_FILE = join(DATA_DIR, "settings.json");
-
-const DEFAULT_SETTINGS: Settings = {
+const DEFAULT_SETTINGS = {
   storeName: "The Hunger Bite Istanbul",
   storePhone: "03121129700",
   taxRate: 17,
@@ -38,19 +19,12 @@ const DEFAULT_SETTINGS: Settings = {
   maxDeliveryRadius: 5,
 };
 
-async function loadSettings(): Promise<Settings> {
+async function loadSettings(): Promise<any> {
   try {
-    const raw = await readFile(SETTINGS_FILE, "utf-8");
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
-  } catch {
-    await saveSettings(DEFAULT_SETTINGS);
-    return DEFAULT_SETTINGS;
-  }
-}
-
-async function saveSettings(settings: Settings): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(SETTINGS_FILE, JSON.stringify(settings, null, 2), "utf-8");
+    const { rows } = await pool.query("SELECT value FROM settings WHERE key = 'store'");
+    if (rows.length > 0) return rows[0].value;
+  } catch {}
+  return DEFAULT_SETTINGS;
 }
 
 // ── Public: settings for app + website ──────────────────────────────
@@ -68,10 +42,17 @@ router.get("/admin/settings", async (_req: Request, res: Response): Promise<void
 });
 
 router.patch("/admin/settings", adminAuth, async (req: Request, res: Response): Promise<void> => {
-  const current = await loadSettings();
-  const updated = { ...current, ...req.body };
-  await saveSettings(updated);
-  res.json(updated);
+  try {
+    const current = await loadSettings();
+    const updated = { ...current, ...req.body };
+    await pool.query(
+      "INSERT INTO settings (key, value) VALUES ('store', $1) ON CONFLICT (key) DO UPDATE SET value = $1",
+      [JSON.stringify(updated)]
+    );
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

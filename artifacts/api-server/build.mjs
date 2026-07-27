@@ -46,5 +46,7 @@ await build({
     "pino",
     "pino-pretty",
     "thread-stream",
+    "pg",
+    "pg-native",
   ],
 });
