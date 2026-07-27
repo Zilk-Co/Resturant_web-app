@@ -31235,7 +31235,13 @@ app.use(
   })
 );
 app.use((0, import_cors.default)({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.includes(".vercel.app") || origin.includes("localhost")) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true
 }));
 app.use((0, import_cookie_parser.default)());

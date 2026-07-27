@@ -5,17 +5,23 @@ import "./index.css";
 import "@/lib/api";
 import App from "./App";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 const originalFetch = window.fetch;
 window.fetch = function (input, init) {
-  const token = sessionStorage.getItem("admin_token");
-  if (token) {
-    const headers = new Headers(init?.headers);
-    if (!headers.has("authorization")) {
-      headers.set("authorization", `Bearer ${token}`);
-    }
-    return originalFetch.call(window, input, { ...init, headers });
+  let url = typeof input === "string" ? input : input instanceof Request ? input.url : String(input);
+
+  if (url.startsWith("/api/")) {
+    url = API_BASE + url;
   }
-  return originalFetch.call(window, input, init);
+
+  const token = sessionStorage.getItem("admin_token");
+  const headers = new Headers(init?.headers);
+  if (token && !headers.has("authorization")) {
+    headers.set("authorization", `Bearer ${token}`);
+  }
+
+  return originalFetch.call(window, url, { ...init, headers });
 };
 
 const queryClient = new QueryClient({
