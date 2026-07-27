@@ -354,9 +354,7 @@ router.post("/auth/request-otp", otpRequestLimiter, async (req: Request, res: Re
     phone: normalizedPhone,
   };
 
-  if (process.env.NODE_ENV !== "production") {
-    response.devOtp = code;
-  }
+  response.devOtp = code;
 
   res.json(response);
 });
@@ -540,9 +538,7 @@ router.post("/auth/signup", otpRequestLimiter, async (req: Request, res: Respons
     phone: normalizedPhone,
   };
 
-  if (process.env.NODE_ENV !== "production") {
-    response.devOtp = code;
-  }
+  response.devOtp = code;
 
   res.json(response);
 });
