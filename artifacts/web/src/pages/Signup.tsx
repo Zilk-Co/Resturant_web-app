@@ -35,6 +35,8 @@ export default function Signup() {
 
       if (result?.devOtp) {
         setSuccess(`Dev mode — verification code: ${result.devOtp}`);
+      } else {
+        setSuccess("Verification code sent. Check server logs for the code.");
       }
       setStep("otp");
     } catch (err: any) {

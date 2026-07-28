@@ -28985,7 +28985,10 @@ router2.post("/auth/request-otp", otpRequestLimiter, async (req, res) => {
     expiresIn: 300,
     phone: normalizedPhone
   };
-  response.devOtp = code;
+  if (process.env.SHOW_DEV_OTP === "true") {
+    response.devOtp = code;
+  }
+  console.log(`[OTP] Phone: ${normalizedPhone}, Code: ${code}`);
   res.json(response);
 });
 router2.post("/auth/verify-otp", otpVerifyLimiter, loginLimiter, async (req, res) => {
@@ -29138,7 +29141,10 @@ router2.post("/auth/signup", otpRequestLimiter, async (req, res) => {
     expiresIn: 300,
     phone: normalizedPhone
   };
-  response.devOtp = code;
+  if (process.env.SHOW_DEV_OTP === "true") {
+    response.devOtp = code;
+  }
+  console.log(`[OTP] Phone: ${normalizedPhone}, Code: ${code}`);
   res.json(response);
 });
 router2.post("/auth/verify-signup", otpVerifyLimiter, loginLimiter, async (req, res) => {
